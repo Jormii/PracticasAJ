@@ -30,6 +30,7 @@ def inicializar_nonograma():
     solucion["n_columnas"] = n_columnas
     solucion["ci_total"] = ci_total
     solucion["columnas"] = columnas
+    solucion["columnas_pintadas"] = [-1] * n_columnas
     solucion["nonograma"] = nonograma
 
     return solucion
@@ -39,42 +40,58 @@ def es_solucion(nonograma):
     return (nonograma["fi_total"] + nonograma["ci_total"]) == 0
 
 
-def es_factible(nonograma, fila, columna, pintar):
+def es_factible(nonograma, fila, columna):
     if fila >= nonograma["n_filas"]:
         return False
     
     valor_fila = nonograma["filas"][fila]
-    valor_columna = nonograma["columnas"][columna]
-    
-    return valor_fila >= pintar and valor_columna >= pintar
+    ultima_columna = columna + valor_fila
+    for c in range(columna, ultima_columna):
+        valor_columna = nonograma["columnas"][c]
+        if valor_columna == 0:
+            return False
+        
+        if nonograma["columnas_pintadas"][c] != -1:
+            if nonograma["nonograma"][fila - 1][c] != 1:
+                return False
+
+    return True
 
 def resolver_nonograma(nonograma, d=0):
     if es_solucion(nonograma):
         return nonograma, True
 
-    fila = d // nonograma["n_filas"]
-    columna = d % nonograma["n_filas"]
-
+    fila = d
+    valor_fila = nonograma["filas"][fila]
+    columna = 0
+    columna_limite = nonograma["n_columnas"] - valor_fila
     es_sol = False
-    pintar = 1
-    while not es_sol and pintar >= 0:
-        if es_factible(nonograma, fila, columna, pintar):
-            nonograma["fi_total"] -= pintar
-            nonograma["ci_total"] -= pintar
-            nonograma["filas"][fila] -= pintar
-            nonograma["columnas"][columna] -= pintar
-            nonograma["nonograma"][fila][columna] = pintar
+    while not es_sol and columna <= columna_limite:
+        if es_factible(nonograma, fila, columna):
+            nonograma["fi_total"] -= valor_fila
+            nonograma["ci_total"] -= valor_fila
+            
+            ultima_columna = columna + valor_fila
+            for c in range(columna, ultima_columna):
+                if nonograma["columnas_pintadas"][c] == -1:
+                    nonograma["columnas_pintadas"][c] = fila
+                nonograma["filas"][fila] -= 1   # Innecesario
+                nonograma["columnas"][c] -= 1
+                nonograma["nonograma"][fila][c] = 1
 
             solucion, es_sol = resolver_nonograma(nonograma, d + 1)
             
             if not es_sol:
-                nonograma["fi_total"] += pintar
-                nonograma["ci_total"] += pintar
-                nonograma["filas"][fila] += pintar
-                nonograma["columnas"][columna] += pintar
-                nonograma["nonograma"][fila][columna] = -1
+                nonograma["fi_total"] += valor_fila
+                nonograma["ci_total"] += valor_fila
+                for c in range(columna, ultima_columna):
+                    if nonograma["columnas_pintadas"][c] == fila:
+                        nonograma["columnas_pintadas"][c] = -1
+                    nonograma["filas"][fila] += 1   # Innecesario
+                    nonograma["columnas"][c] += 1
+                    nonograma["nonograma"][fila][c] = -1
         
-        pintar -= 1
+        columna += 1
 
     return nonograma, es_sol
 
@@ -85,10 +102,15 @@ def print_nonograma(solucion):
             print("#" if columna == 1 else "-", end="")
         print()
 
+import time
 
 nonograma = inicializar_nonograma()
+
+start = time.time()
 solucion, es_sol = resolver_nonograma(nonograma)
+end = time.time()
 if es_sol:
     print_nonograma(solucion)
 else:
     print("IMPOSIBLE")
+print((end - start) * 1000)
