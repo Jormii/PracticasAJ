@@ -24,6 +24,7 @@ def inicializar_nonograma():
     solucion["n_columnas"] = n_columnas
     solucion["columnas"] = columnas
     solucion["columnas_pintadas"] = [-1] * n_columnas
+    solucion["columnas_invalidas"] = [-1] * n_columnas
     solucion["nonograma"] = [-1] * n_filas
 
     return solucion
@@ -34,15 +35,32 @@ def es_solucion(nonograma, d):
 
 
 def calcular_columnas_validas(nonograma, fila):
+    valor_fila = nonograma["filas"][fila]
     if fila == 0:
-        valor_fila_inicial = nonograma["filas"][0]
-        columna_maxima = nonograma["n_columnas"] - valor_fila_inicial
-        return list(range(columna_maxima + 1))
+        columna_inicial = 0
+        columna_maxima = nonograma["n_columnas"] - valor_fila
+    else:
+        solucion_previa = nonograma["nonograma"][fila - 1]
+        if solucion_previa == -1:
+            columna_inicial = 0
+            columna_maxima = nonograma["n_columnas"] - valor_fila
+        else:
+            columna_inicial = solucion_previa[0] - valor_fila + 1
+            if columna_inicial < 0:
+                columna_inicial = 0
+
+            columna_maxima = nonograma["n_columnas"] - valor_fila
+            if columna_maxima > solucion_previa[1]:
+                columna_maxima = solucion_previa[1]
+
+    return list(range(columna_inicial, columna_maxima + 1))
 
 
 def es_factible(nonograma, fila, columna):
-    if fila >= nonograma["n_filas"]:
-        return False
+    if fila == 0:
+        solucion_previa = (0, nonograma["n_columnas"] - 1)
+    else:
+        solucion_previa = nonograma["nonograma"][fila - 1]
 
     valor_fila = nonograma["filas"][fila]
     ultima_columna = columna + valor_fila
@@ -52,18 +70,35 @@ def es_factible(nonograma, fila, columna):
             return False
 
         if nonograma["columnas_pintadas"][c] != -1:
-            if nonograma["nonograma"][fila - 1][c] != 1:
+            if solucion_previa == -1:
+                return False
+            
+            if c not in range(solucion_previa[0], solucion_previa[1] + 1):
                 return False
 
     return True
 
 
 def actualizar_valores(nonograma, fila, columna):
-    x = 0
+    valor_fila = nonograma["filas"][fila]
+    ultima_columna = columna + valor_fila
+    for c in range(columna, ultima_columna):
+        nonograma["columnas"][c] -= 1
+        if nonograma["columnas_pintadas"][c] == -1:
+            nonograma["columnas_pintadas"][c] = fila
+
+    nonograma["nonograma"][fila] = (columna, ultima_columna - 1)
 
 
 def revertir_actualizacion(nonograma, fila, columna):
-    x = 0
+    valor_fila = nonograma["filas"][fila]
+    ultima_columna = columna + valor_fila
+    for c in range(columna, ultima_columna):
+        nonograma["columnas"][c] += 1
+        if nonograma["columnas_pintadas"][c] == fila:
+            nonograma["columnas_pintadas"][c] = -1
+
+    nonograma["nonograma"][fila] = -1
 
 
 def resolver_nonograma(nonograma, d=0):
@@ -71,6 +106,9 @@ def resolver_nonograma(nonograma, d=0):
         return nonograma, True
 
     fila = d
+    if nonograma["filas"][fila] == 0:
+        return resolver_nonograma(nonograma, d + 1)
+
     i = 0
     es_sol = False
     columnas_validas = calcular_columnas_validas(nonograma, fila)
@@ -88,8 +126,15 @@ def resolver_nonograma(nonograma, d=0):
 
 
 def print_nonograma(solucion):
-    # TODO
-    print(nonograma["nonograma"])
+    for f in range(solucion["n_filas"]):
+        solucion_fila = solucion["nonograma"][f]
+        for c in range(solucion["n_columnas"]):
+            if solucion_fila == -1:
+                print("-", end="")
+            else:
+                print("#" if c in range(
+                    solucion_fila[0], solucion_fila[1] + 1) else "-", end="")
+        print()
 
 
 nonograma = inicializar_nonograma()
