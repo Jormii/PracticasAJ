@@ -105,7 +105,7 @@ def actualizar_valores(nonograma, fila, columna):
         ini = min(solucion_previa[0], solucion_fila[0])
         fin = max(solucion_previa[1], solucion_fila[1])
         for c in range(ini, fin + 1):
-            if nonograma["columnas_invalidas"] != -1 and c not in rango_fila:
+            if nonograma["columnas_invalidas"][c] == -1 and c not in rango_fila:
                 nonograma["columnas_invalidas"][c] = fila
 
 
@@ -138,6 +138,7 @@ def resolver_nonograma(nonograma, d=0):
     columnas_validas = calcular_columnas_validas(nonograma, fila)
     while not es_sol and i < len(columnas_validas):
         columna = columnas_validas[i]
+        
         if es_factible(nonograma, fila, columna):
             actualizar_valores(nonograma, fila, columna)
             nonograma, es_sol = resolver_nonograma(nonograma, d + 1)
