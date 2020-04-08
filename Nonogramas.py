@@ -146,4 +146,5 @@ if es_sol:
     print_nonograma(solucion)
 else:
     print("IMPOSIBLE")
-print((end - start) * 1000)
+print("Segundos:", end - start)
+print("Milisegundos:", (end - start) * 1000)
