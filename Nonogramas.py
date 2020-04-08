@@ -97,6 +97,9 @@ def actualizar_valores(nonograma, fila, columna):
 
     if fila != 0:
         solucion_previa = nonograma["nonograma"][fila - 1]
+        if solucion_previa == -1:
+            return
+        
         solucion_fila = nonograma["nonograma"][fila]
         rango_fila = range(solucion_fila[0], solucion_fila[1] + 1)
         ini = min(solucion_previa[0], solucion_fila[0])
