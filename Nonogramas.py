@@ -36,23 +36,8 @@ def es_solucion(nonograma, d):
 
 def calcular_columnas_validas(nonograma, fila):
     valor_fila = nonograma["filas"][fila]
-    if fila == 0:
-        columna_inicial = 0
-        columna_maxima = nonograma["n_columnas"] - valor_fila
-    else:
-        solucion_previa = nonograma["nonograma"][fila - 1]
-        if solucion_previa == -1:
-            columna_inicial = 0
-            columna_maxima = nonograma["n_columnas"] - valor_fila
-        else:
-            columna_inicial = solucion_previa[0] - valor_fila + 1
-            if columna_inicial < 0:
-                columna_inicial = 0
-
-            columna_maxima = nonograma["n_columnas"] - valor_fila
-            if columna_maxima > solucion_previa[1]:
-                columna_maxima = solucion_previa[1]
-
+    columna_inicial = 0
+    columna_maxima = nonograma["n_columnas"] - valor_fila
     return list(range(columna_inicial, columna_maxima + 1))
 
 
