@@ -79,15 +79,11 @@ def es_factible(nonograma, fila, columna):
         if c >= nonograma["n_columnas"]:
             return False
         
-        valor_columna = nonograma["columnas"][c]
-        
         if nonograma["nonograma"][fila][c] == 1:
-            if valor_columna >= fila:
-                return False
-            else:
-                continue
-
-        if valor_columna == 0:
+            continue
+        
+        valor_columna = nonograma["columnas"][c]
+        if valor_columna == 0 or fila + valor_columna > nonograma["n_filas"]:
             return False
 
     return True
