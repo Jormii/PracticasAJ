@@ -37,8 +37,16 @@ def inicializar_nonograma():
     return solucion
 
 
-def es_solucion(nonograma, d):
-    return d >= nonograma["n_filas"]
+def es_solucion(nonograma):
+    for f in nonograma["filas"]:
+        if f != 0:
+            return False
+    
+    for c in nonograma["columnas"]:
+        if c != 0:
+            return False
+        
+    return True
 
 
 def calcular_columnas_validas(nonograma, fila):
@@ -57,6 +65,9 @@ def calcular_columnas_validas(nonograma, fila):
 
 
 def es_factible(nonograma, fila, columna):
+    if fila > nonograma["n_filas"]:
+        return False
+    
     valor_fila = nonograma["filas"][fila]
     if valor_fila < 0:
         return False
@@ -64,6 +75,10 @@ def es_factible(nonograma, fila, columna):
     valor_fila_constante = nonograma["filas_constante"][fila]
     ultima_columna = columna + valor_fila_constante
     for c in range(columna, ultima_columna):
+        # Hmmm
+        if c >= nonograma["n_columnas"]:
+            return False
+        
         valor_columna = nonograma["columnas"][c]
         
         if nonograma["nonograma"][fila][c] == 1:
@@ -104,33 +119,23 @@ def actualizar_valores(nonograma, fila, columna):
         nonograma["nonograma"][fila][c] = 1
 
 
-def revertir_actualizacion(nonograma, fila, columna):
-    nonograma["filas"][fila] = nonograma["filas_constante"][fila]
-    if nonograma["filas_pintadas"][fila] == columna:
-        nonograma["filas_pintadas"][fila] = -1
-        
+def revertir_actualizacion(nonograma, fila, columna):       
     valor_fila_constante = nonograma["filas_constante"][fila]
     ultima_columna = columna + valor_fila_constante
     for c in range(columna, ultima_columna):
-        nonograma["columnas"][c] += 1
-
         if nonograma["columnas_pintadas"][c] == fila:
             nonograma["columnas_pintadas"][c] = -1
-            
             valor_columna = nonograma["columnas_constante"][c]
-            for f in range(fila + 1, fila + valor_columna):
+            nonograma["columnas"][c] = valor_columna
+            for f in range(fila, fila + valor_columna):
                 if nonograma["filas_pintadas"][f] == c:
                     nonograma["filas_pintadas"][f] = -1
                 
                 nonograma["nonograma"][f][c] = 0
                 nonograma["filas"][f] += 1
-                nonograma["columnas"][c] += 1
-
-        nonograma["nonograma"][fila][c] = 0
-
 
 def resolver_nonograma(nonograma, d=0):
-    if es_solucion(nonograma, d):
+    if es_solucion(nonograma):
         return nonograma, True
 
     fila = d
