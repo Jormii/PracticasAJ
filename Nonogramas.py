@@ -48,16 +48,15 @@ def calcular_columnas_validas(nonograma, fila):
     valor_fila = nonograma["filas"][fila]
     if nonograma["filas_pintadas"][fila] != -1:
         valor_fila_constante = nonograma["filas_constante"][fila]
-        
         columna_pintada = nonograma["filas_pintadas"][fila]
-        columna_inicial = max(columna_pintada - valor_fila, 0)
-        columna_maxima = columna_pintada
-        if columna_maxima > nonograma["n_columnas"] - valor_fila_constante:
-            columna_maxima = nonograma["n_columnas"] - valor_fila_constante
+        fila_pintada = nonograma["columnas_pintadas"][columna_pintada]
+        
+        columna_inicial = max(0, columna_pintada - valor_fila_constante)        
+        columna_maxima = min(columna_pintada, nonograma["n_columnas"] - valor_fila_constante)
     else:
         columna_inicial = 0
         columna_maxima = nonograma["n_columnas"] - valor_fila
-
+        
     return list(range(columna_inicial, columna_maxima + 1))
 
 
@@ -144,6 +143,9 @@ def resolver_nonograma(nonograma, d=0):
     columnas_validas = calcular_columnas_validas(nonograma, fila)
     while not es_sol and i < len(columnas_validas):
         columna = columnas_validas[i]
+        
+        if fila == 0 and columna == 14:
+            x = 0
 
         if es_factible(nonograma, fila, columna):
             actualizar_valores(nonograma, fila, columna)
