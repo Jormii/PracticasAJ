@@ -51,7 +51,7 @@ def calcular_columnas_validas(nonograma, fila):
         columna_pintada = nonograma["filas_pintadas"][fila]
         fila_pintada = nonograma["columnas_pintadas"][columna_pintada]
         
-        columna_inicial = max(0, columna_pintada - valor_fila_constante)        
+        columna_inicial = max(0, columna_pintada - valor_fila_constante + 1)        
         columna_maxima = min(columna_pintada, nonograma["n_columnas"] - valor_fila_constante)
     else:
         columna_inicial = 0
