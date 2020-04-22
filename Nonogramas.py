@@ -143,9 +143,6 @@ def resolver_nonograma(nonograma, d=0):
     columnas_validas = calcular_columnas_validas(nonograma, fila)
     while not es_sol and i < len(columnas_validas):
         columna = columnas_validas[i]
-        
-        if fila == 0 and columna == 14:
-            x = 0
 
         if es_factible(nonograma, fila, columna):
             actualizar_valores(nonograma, fila, columna)
