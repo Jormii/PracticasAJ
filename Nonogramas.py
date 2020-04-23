@@ -25,6 +25,7 @@ def inicializar_nonograma():
     solucion["filas_constante"] = filas                 # Valores originales de las filas
     solucion["filas"] = list(filas)                     # Valores que restan para completar la fila
     solucion["filas_pintadas"] = [-1] * n_filas         # Indica la primera columna en la que se comenzó a pintar las filas
+    solucion["filas_primera_celda"] = [-1] * n_filas    # Primera celda pintada de cada fila
 
     solucion["n_columnas"] = n_columnas
     solucion["columnas_constante"] = list(columnas)
@@ -54,16 +55,17 @@ def calcular_columnas_validas(nonograma, fila):
     if nonograma["filas_pintadas"][fila] != -1:
         valor_fila_constante = nonograma["filas_constante"][fila]
         columna_pintada = nonograma["filas_pintadas"][fila]
-
-        # TODO: ¿Se puede mejorar?
-        columna_maxima = min(columna_pintada, nonograma["n_columnas"] - valor_fila_constante)
-
-        columna_inicial = max(0, columna_pintada - valor_fila_constante + 1)
-        for c in range(columna_pintada, columna_maxima + 1):
-            if nonograma["nonograma"][fila][c + valor_fila_constante - 1] == 0:
+            
+        # Se busca la primera celda pintada en la fila
+        primera_celda_fila = columna_pintada
+        for c in range(columna_pintada - 1, -1, -1):
+            if nonograma["nonograma"][fila][c] == 0:
                 break
-
-            columna_inicial += 1
+            
+            primera_celda_fila -= 1
+            
+        columna_inicial = max(0, primera_celda_fila - valor_fila)
+        columna_maxima = min(primera_celda_fila, nonograma["n_columnas"] - valor_fila_constante)
     else:
         columna_inicial = 0
         columna_maxima = nonograma["n_columnas"] - valor_fila   # En este caso valor_fila == valor_fila_cte
