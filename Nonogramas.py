@@ -8,58 +8,48 @@ def inicializar_nonograma():
 
     filas = [0] * n_filas
     columnas = [0] * n_columnas
+    nonograma = []
 
-    fi_total = 0
     fis = input().strip().split()
     for f in range(n_filas):
         filas[f] = int(fis[f])
+        nonograma.append([0] * n_columnas)
 
     cis = input().strip().split()
     for c in range(n_columnas):
         columnas[c] = int(cis[c])
 
     solucion = {}
-    solucion["n_filas"] = n_filas
+
+    solucion["n_filas"] = n_filas                           # Valores originales de las filas. Constante
     solucion["filas"] = filas
+
     solucion["n_columnas"] = n_columnas
-    solucion["columnas"] = columnas
-    solucion["columnas_pintadas"] = [-1] * n_columnas
-    solucion["columnas_invalidas"] = [-1] * n_columnas
-    solucion["nonograma"] = [-1] * n_filas
+    solucion["columnas"] = columnas                         # Cuantas celdas quedan por pintar en las columnas                     
+    solucion["columnas_pintadas"] = [-1] * n_columnas       # Indica en que filas comenzaron a pintarse las columnas
+
+    solucion["nonograma"] = nonograma                       # Matriz de 0s y 1s que representa el nonograma. 1 indica que se pinta una celda
 
     return solucion
 
-
+# Un nonograma es solucion cuando se han visitado todas sus filas
 def es_solucion(nonograma, d):
     return d >= nonograma["n_filas"]
 
 
-def calcular_columnas_validas(nonograma, fila):
-    valor_fila = nonograma["filas"][fila]
-    columna_inicial = 0
-    columna_maxima = nonograma["n_columnas"] - valor_fila
-    return list(range(columna_inicial, columna_maxima + 1))
-
-
 def es_factible(nonograma, fila, columna):
-    if fila == 0:
-        solucion_previa = (0, nonograma["n_columnas"] - 1)
-    else:
-        solucion_previa = nonograma["nonograma"][fila - 1]
-
     valor_fila = nonograma["filas"][fila]
     ultima_columna = columna + valor_fila
     for c in range(columna, ultima_columna):
         valor_columna = nonograma["columnas"][c]
+        
+        # Si ya se ha completado la columna
         if valor_columna == 0:
             return False
 
-        if nonograma["columnas_pintadas"][c] != -1:
-            if solucion_previa == -1:
-                return False
-            
-            if c not in range(solucion_previa[0], solucion_previa[1] + 1):
-                return False
+        # Si se ha pintado en esta columa y la celda inmediatamente superior no se ha pintado => Habria un espacio entre columnas
+        if nonograma["columnas_pintadas"][c] != -1 and nonograma["nonograma"][fila - 1][c] != 1:
+            return False
 
     return True
 
@@ -68,37 +58,37 @@ def actualizar_valores(nonograma, fila, columna):
     valor_fila = nonograma["filas"][fila]
     ultima_columna = columna + valor_fila
     for c in range(columna, ultima_columna):
+        nonograma["nonograma"][fila][c] = 1
         nonograma["columnas"][c] -= 1
         if nonograma["columnas_pintadas"][c] == -1:
             nonograma["columnas_pintadas"][c] = fila
-
-    nonograma["nonograma"][fila] = (columna, ultima_columna - 1)
 
 
 def revertir_actualizacion(nonograma, fila, columna):
     valor_fila = nonograma["filas"][fila]
     ultima_columna = columna + valor_fila
     for c in range(columna, ultima_columna):
+        nonograma["nonograma"][fila][c] = 0
         nonograma["columnas"][c] += 1
         if nonograma["columnas_pintadas"][c] == fila:
             nonograma["columnas_pintadas"][c] = -1
-
-    nonograma["nonograma"][fila] = -1
 
 
 def resolver_nonograma(nonograma, d=0):
     if es_solucion(nonograma, d):
         return nonograma, True
 
+    # Se resuelve la siguiente fila si no hay nada que pintar en esta
     fila = d
     if nonograma["filas"][fila] == 0:
         return resolver_nonograma(nonograma, d + 1)
 
     i = 0
     es_sol = False
-    columnas_validas = calcular_columnas_validas(nonograma, fila)
-    while not es_sol and i < len(columnas_validas):
-        columna = columnas_validas[i]
+    valor_fila = nonograma["filas"][fila]
+    columna_maxima = nonograma["n_columnas"] - valor_fila
+    while not es_sol and i <= columna_maxima:
+        columna = i
         if es_factible(nonograma, fila, columna):
             actualizar_valores(nonograma, fila, columna)
             solucion, es_sol = resolver_nonograma(nonograma, d + 1)
@@ -111,14 +101,9 @@ def resolver_nonograma(nonograma, d=0):
 
 
 def print_nonograma(solucion):
-    for f in range(solucion["n_filas"]):
-        solucion_fila = solucion["nonograma"][f]
-        for c in range(solucion["n_columnas"]):
-            if solucion_fila == -1:
-                print("-", end="")
-            else:
-                print("#" if c in range(
-                    solucion_fila[0], solucion_fila[1] + 1) else "-", end="")
+    for fila in solucion["nonograma"]:
+        for c in fila:
+            print("#" if c == 1 else "-", end="")
         print()
 
 
