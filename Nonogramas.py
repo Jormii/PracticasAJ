@@ -22,7 +22,6 @@ def inicializar_nonograma():
     solucion["filas_constante"] = filas                 # Valores originales de las filas
     solucion["filas"] = list(filas)                     # Valores que restan para completar la fila
     solucion["filas_pintadas"] = [-1] * n_filas         # Indica la primera columna en la que se comenzó a pintar las filas
-    solucion["filas_primera_celda"] = [-1] * n_filas    # Primera celda pintada de cada fila
 
     solucion["n_columnas"] = n_columnas
     solucion["columnas_constante"] = list(columnas)
@@ -35,10 +34,10 @@ def inicializar_nonograma():
 
 
 # Se ha resuelto cuando se han pintado todas las filas
-# No se comprueban las columnas porque se garantiza se han pintado todas
-def es_solucion(nonograma):
-    for valor_fila in nonograma["filas"]:
-        if valor_fila != 0:
+# No se comprueban las columnas ni las filas previas porque se garantiza se han pintado todas
+def es_solucion(nonograma, fila):
+    for i in range(fila, nonograma["n_filas"]):
+        if nonograma["filas"][i] != 0:
             return False
 
     return True
@@ -141,7 +140,7 @@ def revertir_actualizacion(nonograma, fila, columna):
 
 
 def resolver_nonograma(nonograma, d=0):
-    if es_solucion(nonograma):
+    if es_solucion(nonograma, d):
         return nonograma, True
 
     # Se pasa a la siguiente fila si no hay nada que pintar
