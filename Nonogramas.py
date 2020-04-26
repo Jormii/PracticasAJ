@@ -1,6 +1,3 @@
-import time
-
-
 def inicializar_nonograma():
     filas_columnas = input().strip().split()
     n_filas = int(filas_columnas[0])
@@ -139,13 +136,8 @@ def print_nonograma(solucion):
 
 
 nonograma = inicializar_nonograma()
-
-start = time.time()
 solucion, es_sol = resolver_nonograma(nonograma)
-end = time.time()
 if es_sol:
     print_nonograma(solucion)
 else:
     print("IMPOSIBLE")
-print("Segundos:", end - start)
-print("Milisegundos:", (end - start) * 1000)
