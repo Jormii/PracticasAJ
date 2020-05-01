@@ -1,70 +1,103 @@
 import random  # TODO: Aleatorios vistos en clase
 
 direcciones = {
-    0: (-1, 0),    # Norte
-    1: (0, 1),     # Este
-    2: (1, 0),     # Sur
-    3: (0, -1)     # Oeste
+    0: (0, -1),    # Norte
+    1: (1, 0),     # Este
+    2: (0, 1),     # Sur
+    3: (-1, 0)     # Oeste
 }
 
 
-def random_walk(ancho, alto, n_tuneles, l_max_tunel):
+def random_walk(ancho, alto, n_tuneles, l_max_tunel, debug=False):
     # Crear mapa
     mapa = []
     for i in range(alto):
         mapa.append([0] * ancho)
 
-    # Elegir posicion aleatoria
+    if debug:
+        print("[DEBUG] Creando mapa de {0}x{1}".format(ancho, alto))
+        print("[DEBUG] Mapa:")
+        imprimir_mapa(mapa)
+
+    # Calcular posicion inicial
     random.seed(None)
+    x0 = random.randint(0, ancho - 1)
+    y0 = random.randint(0, alto - 1)
 
-    fila = random.randint(0, alto - 1)
-    columna = random.randint(0, ancho - 1)
+    if debug:
+        print("[DEBUG] Posicion inicial ({0}, {1})".format(x0, y0))
 
-    posicion_inicio = (fila, columna)
-    mapa[fila][columna] = 2
+    # Dibujar tuneles
+    for t in range(n_tuneles):
+        longitud = random.randint(1, l_max_tunel)
+        punto_giro = random.randint(1, longitud)
+        direccion = direcciones[random.randint(0, 3)]
 
-    # Crear tuneles
-    for i in range(n_tuneles):
-        l = random.randint(1, l_max_tunel)
-        l_hasta_giro = random.randint(1, l)
-        direccion_indice = random.randint(0, 3)
-        direccion = direcciones[direccion_indice]
+        if debug:
+            print("[DEBUG] Pintando tunel numero {0}".format(t + 1))
+            print("[DEBUG] Longitud del tunel: {0}".format(longitud))
+            print("[DEBUG] Punto de giro del tunel: {0}".format(punto_giro))
+            print("[DEBUG] Direccion del tunel: {0}".format(direccion))
 
-        fila = posicion_inicio[0]
-        columna = posicion_inicio[1]
-        j = 1
-        while j <= l:
-            fila += direccion[0]
-            columna += direccion[1]
+        x = x0
+        y = y0
+        for paso in range(1, longitud + 1):
+            while se_saldria_del_mapa(ancho, alto, x, y, direccion):
+                direccion = calcular_nueva_direccion(
+                    ancho, alto, x, y, direccion)
 
-            # Si sale del mapa, girar en el sentido de las agujas del reloj
-            if fila < 0 or fila >= alto or columna < 0 or columna >= ancho:
-                # Deshacer
-                fila -= direccion[0]
-                columna -= direccion[1]
-                
-                # Avanzar en la nueva direccion
-                direccion_indice = (direccion_indice + 1) % 4
-                direccion = direcciones[direccion_indice]
-                
-                continue
+                if debug:
+                    print("[DEBUG] El tunel ha alcanzado una pared. Nueva direccion: {0}".format(
+                        direccion))
 
-            # Si se ha recorrido tanto como para girar
-            # if j == l_hasta_giro:
-                # direccion_indice = (direccion_indice + 1) % 4
-                # direccion = direcciones[direccion_indice]
+            x += direccion[0]
+            y += direccion[1]
+            # mapa[y][x] = 1
+            # TODO: Quitar
+            if mapa[y][x] == 0:
+                mapa[y][x] = str(t + 1)
+            else:
+                mapa[y][x] = mapa[y][x] + ",{0}".format(t + 1)
 
-            # Pintar si no es la casilla de inicio
-            if mapa[fila][columna] != 2:
-                mapa[fila][columna] = 1
+            if debug:
+                print(
+                    "[DEBUG] Se ha pintado un tunel en ({0}, {1})".format(x, y))
 
-            j+= 1
+            if paso == punto_giro:
+                direccion = calcular_nueva_direccion(
+                    ancho, alto, x, y, direccion)
 
+                if debug:
+                    print("[DEBUG] Se ha alcanzado el punto de giro. Nueva direccion: {0}".format(
+                        direccion))
+
+    # Para indicar la posicion inicial en el mapa devuelto
+    mapa[y0][x0] = "*"
     return mapa
+
+
+def se_saldria_del_mapa(ancho, alto, x, y, direccion):
+    x += direccion[0]
+    y += direccion[1]
+
+    return x < 0 or y < 0 or x >= ancho or y >= alto
+
+
+def calcular_nueva_direccion(ancho, alto, x, y, direccion):
+    # Se mueve hacia el norte o sur
+    if direccion[0] == 0:
+        nueva_direccion = direcciones[1] if x / \
+            ancho < 0.5 else direcciones[3]
+    # Se mueve hacia el oeste o este
+    else:
+        nueva_direccion = direcciones[2] if x / \
+            ancho < 0.5 else direcciones[0]
+
+    return nueva_direccion
 
 
 def imprimir_mapa(mapa):
     for fila in mapa:
         for columna in fila:
-            print(columna, "", end="")
+            print("[{0}]\t".format(columna), "", end="")
         print("")
