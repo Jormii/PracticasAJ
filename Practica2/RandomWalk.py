@@ -52,12 +52,7 @@ def random_walk(ancho, alto, n_tuneles, l_max_tunel, debug=False):
 
             x += direccion[0]
             y += direccion[1]
-            # mapa[y][x] = 1
-            # TODO: Quitar
-            if mapa[y][x] == 0:
-                mapa[y][x] = str(t + 1)
-            else:
-                mapa[y][x] = mapa[y][x] + ",{0}".format(t + 1)
+            mapa[y][x] = 1
 
             if debug:
                 print(
@@ -86,12 +81,14 @@ def se_saldria_del_mapa(ancho, alto, x, y, direccion):
 def calcular_nueva_direccion(ancho, alto, x, y, direccion):
     # Se mueve hacia el norte o sur
     if direccion[0] == 0:
-        nueva_direccion = direcciones[1] if x / \
-            ancho < 0.5 else direcciones[3]
+        porcentaje_en_x = x / ancho # %x € [0, 1], si extremo izquierdo/derecho
+        girar_derecha = random.random() >= porcentaje_en_x
+        nueva_direccion = direcciones[1] if girar_derecha else direcciones[3]
     # Se mueve hacia el oeste o este
     else:
-        nueva_direccion = direcciones[2] if x / \
-            ancho < 0.5 else direcciones[0]
+        porcentaje_en_y = y / alto # %y € [0, 1], si extremo superior/inferior
+        girar_abajo = random.random() >= porcentaje_en_y
+        nueva_direccion = direcciones[2] if girar_abajo else direcciones[0]
 
     return nueva_direccion
 
@@ -99,5 +96,5 @@ def calcular_nueva_direccion(ancho, alto, x, y, direccion):
 def imprimir_mapa(mapa):
     for fila in mapa:
         for columna in fila:
-            print("[{0}]\t".format(columna), "", end="")
+            print(columna, "", end="")
         print("")
