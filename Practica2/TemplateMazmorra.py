@@ -20,6 +20,7 @@ class TemplateMazmorra(object):
         self.debug = debug
 
         self.casilla_inicial = None
+        self.posicion_inicial = None
         self.mapa = []
 
     def random_walk(self):
@@ -42,6 +43,7 @@ class TemplateMazmorra(object):
 
         self.casilla_inicial = self.mapa[y0][x0]
         self.casilla_inicial.tipo = c.habitacion
+        self.posicion_inicial = (x0, y0)
 
         if self.debug:
             print("[DEBUG] Posicion inicial ({0}, {1})".format(x0, y0))
@@ -58,7 +60,10 @@ class TemplateMazmorra(object):
     def crear_tunel(self, x0, y0, t):
         longitud = random.randint(1, self.l_max_tunel)
         punto_giro = random.randint(1, longitud)
-        direccion = direcciones[random.randint(0, 3)]
+        direccion_aleatoria = direcciones[random.randint(0, 3)]
+        direccion = self.calcular_nueva_direccion(x0, y0, direccion_aleatoria)
+        
+        self.casilla_inicial.anadir_giro(direccion)
 
         if self.debug:
             print("[DEBUG] Pintando tunel numero {0}".format(t + 1))
@@ -165,5 +170,5 @@ class TemplateMazmorra(object):
     def imprimir_mapa(self):
         for fila in self.mapa:
             for columna in fila:
-                print(columna, "\t", end="")
+                print(columna, " ", end="")
             print("")

@@ -12,5 +12,8 @@ class Casilla(object):
         self.giros.add(direccion)
 
     def __repr__(self):
+        if self.tipo == vacio:
+            return "[0]"
+        
         g = self.giros if len(self.giros) != 0 else "[]"
         return "[{0}, {1}]".format(self.tipo, g)
