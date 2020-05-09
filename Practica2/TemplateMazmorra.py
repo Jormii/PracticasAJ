@@ -1,9 +1,8 @@
 import random  # TODO: Aleatorios vistos en clase
+import importlib
 
-vacio = 0
-tunel = 1
-habitacion = 2
-origen = "*"
+c = importlib.import_module("Casilla")
+
 direcciones = {
     0: (0, -1),    # Norte
     1: (1, 0),     # Este
@@ -20,15 +19,16 @@ class TemplateMazmorra(object):
         self.l_max_tunel = l_max_tunel
         self.debug = debug
 
+        self.casilla_inicial = None
         self.mapa = []
-        self.habitaciones = []
 
     def random_walk(self):
         # Crear mapa y limpiar habitaciones
-        self.habitaciones = []
         self.mapa = []
         for i in range(self.alto):
-            self.mapa.append([vacio] * self.ancho)
+            self.mapa.append([0] * self.ancho)
+            for j in range(self.ancho):
+                self.mapa[i][j] = c.Casilla()
 
         if self.debug:
             print("[DEBUG:TemplateMazmorra]")
@@ -40,22 +40,22 @@ class TemplateMazmorra(object):
         x0 = random.randint(0, self.ancho - 1)
         y0 = random.randint(0, self.alto - 1)
 
+        self.casilla_inicial = self.mapa[y0][x0]
+        self.casilla_inicial.tipo = c.habitacion
+
         if self.debug:
             print("[DEBUG] Posicion inicial ({0}, {1})".format(x0, y0))
 
         # Crear tuneles y salas
         for t in range(self.n_tuneles):
-            x, y, direccion, se_encontro_sala = self.pintar_tunel(x0, y0, t)
+            x, y, direccion, se_encontro_sala = self.crear_tunel(x0, y0, t)
             if not se_encontro_sala:
                 self.crear_sala(x, y, direccion)
 
-        # Para indicar la posicion inicial en el mapa devuelto
-        self.mapa[y0][x0] = origen
+        # Devolver mapa y casilla inicial
+        return self.mapa, self.casilla_inicial
 
-        # Devolver mapa y caminos hasta las habitaciones
-        return self.mapa, self.habitaciones
-
-    def pintar_tunel(self, x0, y0, t):
+    def crear_tunel(self, x0, y0, t):
         longitud = random.randint(1, self.l_max_tunel)
         punto_giro = random.randint(1, longitud)
         direccion = direcciones[random.randint(0, 3)]
@@ -75,13 +75,19 @@ class TemplateMazmorra(object):
                 direccion = self.calcular_nueva_direccion(
                     x, y, direccion)
 
+                casilla = self.mapa[y][x]
+                casilla.anadir_giro(direccion)
+
                 if self.debug:
                     print("[DEBUG] Se ha alcanzado el punto de giro. Nueva direccion: {0}".format(
                         direccion))
 
-            while self.se_saldria_del_mapa(x, y, direccion):
+            if self.se_saldria_del_mapa(x, y, direccion):
                 direccion = self.calcular_nueva_direccion(
                     x, y, direccion)
+
+                casilla = self.mapa[y][x]
+                casilla.anadir_giro(direccion)
 
                 if self.debug:
                     print("[DEBUG] El tunel ha alcanzado una pared. Nueva direccion: {0}".format(
@@ -89,14 +95,15 @@ class TemplateMazmorra(object):
 
             x += direccion[0]
             y += direccion[1]
-            if self.mapa[y][x] == habitacion:
+            casilla = self.mapa[y][x]
+            if casilla.tipo == c.habitacion:
                 if self.debug:
                     print(
                         "[DEBUG] Se ha encontrado una habitacion en ({0}, {1}). Terminando iteracion".format(x, y))
 
                 return x, y, direccion, True
 
-            self.mapa[y][x] = 1
+            casilla.tipo = c.tunel
 
             if self.debug:
                 print(
@@ -108,8 +115,11 @@ class TemplateMazmorra(object):
 
     def crear_sala(self, x, y, direccion):
         # Crear sala
-        while self.se_saldria_del_mapa(x, y, direccion):
+        if self.se_saldria_del_mapa(x, y, direccion):
             direccion = self.calcular_nueva_direccion(x, y, direccion)
+
+            casilla = self.mapa[y][x]
+            casilla.anadir_giro(direccion)
 
             if self.debug:
                 print("[DEBUG] Se crearia una sala fuera de los limites del mapa. Nueva direccion {0}".format(
@@ -117,10 +127,16 @@ class TemplateMazmorra(object):
 
         x += direccion[0]
         y += direccion[1]
-        self.mapa[y][x] = habitacion
+        casilla = self.mapa[y][x]
+        if casilla.tipo != c.tunel:
+            casilla.tipo = c.habitacion
 
-        if self.debug:
-            print("[DEBUG] Se ha creado una sala en ({0}, {1})".format(x, y))
+            if self.debug:
+                print(
+                    "[DEBUG] Se ha creado una sala en ({0}, {1})".format(x, y))
+        elif self.debug:
+            print(
+                "[DEBUG] No se ha creado sala porque hay un tunel en ({0}, {1})".format(x, y))
 
     def se_saldria_del_mapa(self, x, y, direccion):
         x += direccion[0]
@@ -134,14 +150,14 @@ class TemplateMazmorra(object):
         # Se mueve hacia el norte o sur
         if direccion[0] == 0:
             # %x € [0, 1], si extremo izquierdo/derecho
-            porcentaje_en_x = x / self.ancho
-            girar_derecha = random.random() >= porcentaje_en_x
+            porcentaje_en_x = x / (self.ancho - 1)
+            girar_derecha = random.random() > porcentaje_en_x
             nueva_direccion = direcciones[1] if girar_derecha else direcciones[3]
         # Se mueve hacia el oeste o este
         else:
             # %y € [0, 1], si extremo superior/inferior
-            porcentaje_en_y = y / self.alto
-            girar_abajo = random.random() >= porcentaje_en_y
+            porcentaje_en_y = y / (self.alto - 1)
+            girar_abajo = random.random() > porcentaje_en_y
             nueva_direccion = direcciones[2] if girar_abajo else direcciones[0]
 
         return nueva_direccion
@@ -149,5 +165,5 @@ class TemplateMazmorra(object):
     def imprimir_mapa(self):
         for fila in self.mapa:
             for columna in fila:
-                print(columna, "", end="")
+                print(columna, "\t", end="")
             print("")
