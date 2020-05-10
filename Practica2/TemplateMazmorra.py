@@ -169,6 +169,12 @@ class TemplateMazmorra(object):
 
     def imprimir_mapa(self):
         for fila in self.mapa:
-            for columna in fila:
-                print(columna, " ", end="")
+            for casilla in fila:
+                print(casilla.tipo, " ", end="")
+            print("")
+            
+    def imprimir_mapa_detalle(self):
+        for fila in self.mapa:
+            for casilla in fila:
+                print(casilla, " ", end="")
             print("")
