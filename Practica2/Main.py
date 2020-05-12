@@ -13,11 +13,13 @@ if __name__ == "__main__":
 
     factor = 3
     densidad_maxima = 0.8
-    generador = m.Mazmorra(template, factor, densidad_maxima)
+    generador = m.Mazmorra(template, factor, densidad_maxima, True)
     mazmorra = generador.generar_mazmorra()
     
     template.imprimir_mapa()
     print("---")
     generador.imprimir_mazmorra()
+
+    print("Celdas ocupadas: {0}".format(generador.celdas_ocupadas))
 
     x = 0

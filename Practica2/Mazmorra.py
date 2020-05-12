@@ -20,8 +20,8 @@ class Mazmorra(object):
     def generar_mazmorra(self):
         # Reiniciar variables
         self.habitaciones.clear()
-        self.celdas_ocupadas = 0
-        
+        self.celdas_ocupadas = 1    # Casilla inicial
+
         # Generar mazmorra
         alto = self.template.alto * self.factor
         ancho = self.template.ancho * self.factor
@@ -73,8 +73,12 @@ class Mazmorra(object):
             x += direccion[0]
             y += direccion[1]
 
-            self.mazmorra[y][x] = c.tunel
-            self.celdas_ocupadas += 1
+            if self.mazmorra[y][x] == c.vacio:
+                self.mazmorra[y][x] = c.tunel
+                self.celdas_ocupadas += 1
+
+                if self.debug:
+                    print("[DEBUG] Se pinta la celda ({0}, {1})".format(x, y))
 
         casilla_destino = self.template.mapa[y_mapa_destino][x_mapa_destino]
         if casilla_destino.tipo == c.habitacion:
@@ -92,13 +96,21 @@ class Mazmorra(object):
     def anadir_habitacion(self, x, y):
         x_mapa = self.convertir_mazmorra_mapa(x)
         y_mapa = self.convertir_mazmorra_mapa(y)
-        
+
         entrada = ((x, y), (x_mapa, y_mapa))
         if entrada in self.habitaciones:
+            if self.debug:
+                print(
+                    "[DEBUG] La habitacion en ({0}, {1}) ya se ha visitado".format(x, y))
+
             return False
-        
+
         self.mazmorra[y][x] = c.habitacion
         self.habitaciones.append(entrada)
+
+        if self.debug:
+            print("[DEBUG] Se visita la habitacion ({0}, {1})".format(x, y))
+
         return True
 
     def convertir_mazmorra_mapa(self, coordenada):
