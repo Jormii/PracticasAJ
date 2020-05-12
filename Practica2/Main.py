@@ -7,18 +7,17 @@ if __name__ == "__main__":
 
     ancho = 3
     alto = 3
-    n_tuneles = 4
-    l_max_tunnel = 1
+    n_tuneles = 10
+    l_max_tunnel = 5
     template = t.TemplateMazmorra(ancho, alto, n_tuneles, l_max_tunnel)
 
     factor = 3
-    generador = m.Mazmorra(template, factor)
-    mapa, casilla_inicial = template.random_walk()
-        
-    template.imprimir_mapa_detalle()
-    print()
-    template.imprimir_mapa()
-
+    densidad_maxima = 0.8
+    generador = m.Mazmorra(template, factor, densidad_maxima)
     mazmorra = generador.generar_mazmorra()
-    print()
+    
+    template.imprimir_mapa()
+    print("---")
     generador.imprimir_mazmorra()
+
+    x = 0
