@@ -62,8 +62,6 @@ class TemplateMazmorra(object):
         punto_giro = random.randint(1, longitud)
         direccion_aleatoria = direcciones[random.randint(0, 3)]
         direccion = self.calcular_nueva_direccion(x0, y0, direccion_aleatoria)
-        
-        self.casilla_inicial.anadir_giro(direccion)
 
         if self.debug:
             print("[DEBUG] Pintando tunel numero {0}".format(t + 1))
@@ -80,9 +78,6 @@ class TemplateMazmorra(object):
                 direccion = self.calcular_nueva_direccion(
                     x, y, direccion)
 
-                casilla = self.mapa[y][x]
-                casilla.anadir_giro(direccion)
-
                 if self.debug:
                     print("[DEBUG] Se ha alcanzado el punto de giro. Nueva direccion: {0}".format(
                         direccion))
@@ -91,13 +86,13 @@ class TemplateMazmorra(object):
                 direccion = self.calcular_nueva_direccion(
                     x, y, direccion)
 
-                casilla = self.mapa[y][x]
-                casilla.anadir_giro(direccion)
-
                 if self.debug:
                     print("[DEBUG] El tunel ha alcanzado una pared. Nueva direccion: {0}".format(
                         direccion))
 
+            casilla_previa = self.mapa[y][x]
+            casilla_previa.anadir_conexion(direccion)
+            
             x += direccion[0]
             y += direccion[1]
             casilla = self.mapa[y][x]
@@ -124,11 +119,14 @@ class TemplateMazmorra(object):
             direccion = self.calcular_nueva_direccion(x, y, direccion)
 
             casilla = self.mapa[y][x]
-            casilla.anadir_giro(direccion)
+            casilla.anadir_conexion(direccion)
 
             if self.debug:
                 print("[DEBUG] Se crearia una sala fuera de los limites del mapa. Nueva direccion {0}".format(
                     direccion))
+
+        casilla_previa = self.mapa[y][x]
+        casilla_previa.anadir_conexion(direccion)
 
         x += direccion[0]
         y += direccion[1]
@@ -170,7 +168,7 @@ class TemplateMazmorra(object):
     def imprimir_mapa(self):
         for fila in self.mapa:
             for casilla in fila:
-                print(casilla.tipo, " ", end="")
+                print(casilla.tipo if casilla.tipo != c.vacio else " ", " ", end="")
             print("")
             
     def imprimir_mapa_detalle(self):
