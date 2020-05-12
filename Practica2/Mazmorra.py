@@ -13,7 +13,7 @@ class Mazmorra(object):
         self.mazmorra = []
         self.casillas_visitadas = set()
 
-    def generar_mazmorra(self):        
+    def generar_mazmorra(self):
         # Generar mazmorra
         alto = self.template.alto * self.factor
         ancho = self.template.ancho * self.factor
@@ -28,7 +28,8 @@ class Mazmorra(object):
 
         if self.debug:
             print("[DEBUG:Mazmorra]")
-            print("[DEBUG] Creando mazmorra a partir de la posicion ({0}, {1})".format(x0, y0))
+            print(
+                "[DEBUG] Creando mazmorra a partir de la posicion ({0}, {1})".format(x0, y0))
 
         self.casillas_visitadas.clear()
         self.casillas_visitadas.add(posicion_inicial_mapa)
@@ -41,8 +42,9 @@ class Mazmorra(object):
 
     def pintar_tunel(self, x, y, direccion):
         if self.debug:
-            print("[DEBUG] Pintando tunel desde ({0}, {1}) en direccion {2}".format(x, y, direccion))
-        
+            print("[DEBUG] Pintando tunel desde ({0}, {1}) en direccion {2}".format(
+                x, y, direccion))
+
         x_mapa_destino = self.convertir_mazmorra_mapa(x) + direccion[0]
         y_mapa_destino = self.convertir_mazmorra_mapa(y) + direccion[1]
         x_destino = self.convertir_mapa_mazmorra(x_mapa_destino)
@@ -56,14 +58,15 @@ class Mazmorra(object):
         casilla_destino = self.template.mapa[y_mapa_destino][x_mapa_destino]
         if casilla_destino.tipo == c.habitacion:
             self.mazmorra[y][x] = c.habitacion
-            
+
         posicion_destino = (x_mapa_destino, y_mapa_destino)
         if posicion_destino not in self.casillas_visitadas:
             self.casillas_visitadas.add(posicion_destino)
             for giro in casilla_destino.conexiones:
                 self.pintar_tunel(x, y, giro)
         elif self.debug:
-            print("[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
+            print(
+                "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
     def convertir_mazmorra_mapa(self, coordenada):
         return coordenada // self.factor
@@ -72,8 +75,9 @@ class Mazmorra(object):
         factor_medios = self.factor >> 1
         return coordenada * self.factor + factor_medios
 
-    def imprimir_mazmorra(self):
+    def imprimir_mazmorra(self, esconder_vacias=True):
         for fila in self.mazmorra:
             for casilla in fila:
-                print(casilla if casilla != c.vacio else " ", " ", end="")
+                print(" " if casilla ==
+                      c.vacio and esconder_vacias else casilla, " ", end="")
             print("")

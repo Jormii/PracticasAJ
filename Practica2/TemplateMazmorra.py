@@ -92,7 +92,7 @@ class TemplateMazmorra(object):
 
             casilla_previa = self.mapa[y][x]
             casilla_previa.anadir_conexion(direccion)
-            
+
             x += direccion[0]
             y += direccion[1]
             casilla = self.mapa[y][x]
@@ -165,12 +165,13 @@ class TemplateMazmorra(object):
 
         return nueva_direccion
 
-    def imprimir_mapa(self):
+    def imprimir_mapa(self, esconder_vacias=True):
         for fila in self.mapa:
             for casilla in fila:
-                print(casilla.tipo if casilla.tipo != c.vacio else " ", " ", end="")
+                print(" " if casilla.tipo ==
+                      c.vacio and esconder_vacias else casilla.tipo, " ", end="")
             print("")
-            
+
     def imprimir_mapa_detalle(self):
         for fila in self.mapa:
             for casilla in fila:
