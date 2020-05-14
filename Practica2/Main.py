@@ -2,6 +2,8 @@ import importlib
 import pygame
 import sys
 
+ANCHO_MONITOR = 1360
+ALTO_MONITOR = 768
 ESCALA_SPRITES = 128
 
 t = importlib.import_module("TemplateMazmorra")
@@ -13,8 +15,8 @@ def main():
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
 
-    template_mazmorra = generar_mazmorra()
-    pintar_mazmorra(template_mazmorra)
+    mazmorra = generar_mazmorra()
+    pintar_mazmorra(mazmorra)
 
     pygame.display.flip()
 
@@ -31,45 +33,58 @@ def generar_mazmorra():
     l_max_tunnel = 5
     template = t.TemplateMazmorra(ancho, alto, n_tuneles, l_max_tunnel)
 
-    template.random_walk()
-    return template
+    factor = 3
+    densidad_maxima = 0.8
+    generador = m.Mazmorra(template, factor, densidad_maxima)
+    mazmorra = generador.generar_mazmorra()
 
-    # factor = 3
-    # densidad_maxima = 0.8
-    # generador = m.Mazmorra(template, factor, densidad_maxima)
-    # mazmorra = generador.generar_mazmorra()
+    return generador
 
     # template.imprimir_mapa()
     # print("---")
     # generador.imprimir_mazmorra()
 
 
-def pintar_mazmorra(template_mazmorra):
+def pintar_mazmorra(mazmorra):
+    template_mazmorra = mazmorra.template
     template_mazmorra.imprimir_mapa_detalle()
+    mazmorra.imprimir_mazmorra()
 
-    ancho_pantalla = template_mazmorra.ancho * ESCALA_SPRITES
-    alto_pantalla = template_mazmorra.alto * ESCALA_SPRITES
+    ancho = template_mazmorra.ancho * mazmorra.factor
+    alto = template_mazmorra.alto * mazmorra.factor
+
+    escala = ESCALA_SPRITES
+    ancho_pantalla = ancho * escala
+    alto_pantalla = alto * escala
+
+    while ancho_pantalla > ANCHO_MONITOR or alto_pantalla > ALTO_MONITOR:
+        ancho_pantalla = ancho_pantalla >> 1
+        alto_pantalla = alto_pantalla >> 1
+        escala = escala >> 1
+
     screen = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
     screen.fill((0, 0, 0))
 
-    for x in range(template_mazmorra.ancho):
-        for y in range(template_mazmorra.alto):
-            casilla = template_mazmorra.mapa[y][x]
-            if casilla.tipo == c.vacio:
+    for x in range(ancho):
+        for y in range(alto):
+            celda = mazmorra.mazmorra[y][x]
+            if celda == c.vacio:
                 color = (0, 0, 0)
-            elif casilla.tipo == c.tunel:
+            elif celda == c.tunel:
                 color = (255 >> 1, 255 >> 1, 255 >> 1)
-            elif casilla.tipo == c.habitacion:
+            elif celda == c.habitacion:
                 color = (255, 255, 255)
 
-            rectangulo = (x * ESCALA_SPRITES, y * ESCALA_SPRITES,
-                          ESCALA_SPRITES, ESCALA_SPRITES)
+            rectangulo = (x * escala, y * escala,
+                          escala, escala)
             pygame.draw.rect(screen, color, rectangulo, 0)
 
-    x0 = template_mazmorra.posicion_inicial[0]
-    y0 = template_mazmorra.posicion_inicial[1]
-    rectangulo = (x0 * ESCALA_SPRITES, y0 * ESCALA_SPRITES,
-                  ESCALA_SPRITES, ESCALA_SPRITES)
+    x0_mapa = template_mazmorra.posicion_inicial[0]
+    y0_mapa = template_mazmorra.posicion_inicial[1]
+    x0 = mazmorra.convertir_mapa_mazmorra(x0_mapa)
+    y0 = mazmorra.convertir_mapa_mazmorra(y0_mapa)
+    rectangulo = (x0 * escala, y0 * escala,
+                  escala, escala)
     pygame.draw.rect(screen, (255, 0, 0), rectangulo, 0)
 
 
