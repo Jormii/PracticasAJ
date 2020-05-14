@@ -1,7 +1,7 @@
 import random  # TODO: Aleatorios vistos en clase
 import importlib
 
-c = importlib.import_module("Casilla")
+i_casilla = importlib.import_module("Casilla")
 
 direcciones = {
     0: (0, -1),    # Norte
@@ -29,7 +29,7 @@ class TemplateMazmorra(object):
         for i in range(self.alto):
             self.mapa.append([0] * self.ancho)
             for j in range(self.ancho):
-                self.mapa[i][j] = c.Casilla()
+                self.mapa[i][j] = i_casilla.Casilla()
 
         if self.debug:
             print("[DEBUG:TemplateMazmorra]")
@@ -42,7 +42,8 @@ class TemplateMazmorra(object):
         y0 = random.randint(0, self.alto - 1)
 
         self.casilla_inicial = self.mapa[y0][x0]
-        self.casilla_inicial.tipo = c.habitacion
+        self.casilla_inicial.tipo = i_casilla.habitacion
+        self.casilla_inicial.es_casilla_inicial = True
         self.posicion_inicial = (x0, y0)
 
         if self.debug:
@@ -96,14 +97,14 @@ class TemplateMazmorra(object):
             x += direccion[0]
             y += direccion[1]
             casilla = self.mapa[y][x]
-            if casilla.tipo == c.habitacion:
+            if casilla.tipo == i_casilla.habitacion:
                 if self.debug:
                     print(
                         "[DEBUG] Se ha encontrado una habitacion en ({0}, {1}). Terminando iteracion".format(x, y))
 
                 return x, y, direccion, True
 
-            casilla.tipo = c.tunel
+            casilla.tipo = i_casilla.tunel
 
             if self.debug:
                 print(
@@ -131,8 +132,8 @@ class TemplateMazmorra(object):
         x += direccion[0]
         y += direccion[1]
         casilla = self.mapa[y][x]
-        if casilla.tipo != c.tunel:
-            casilla.tipo = c.habitacion
+        if casilla.tipo != i_casilla.tunel:
+            casilla.tipo = i_casilla.habitacion
 
             if self.debug:
                 print(
@@ -148,8 +149,6 @@ class TemplateMazmorra(object):
         return x < 0 or y < 0 or x >= self.ancho or y >= self.alto
 
     def calcular_nueva_direccion(self, x, y, direccion):
-        # TODO: En las esquinas a veces produce giros hacia la pared
-
         # Se mueve hacia el norte o sur
         if direccion[0] == 0:
             # %x € [0, 1], si extremo izquierdo/derecho
@@ -169,7 +168,7 @@ class TemplateMazmorra(object):
         for fila in self.mapa:
             for casilla in fila:
                 print(" " if casilla.tipo ==
-                      c.vacio and esconder_vacias else casilla.tipo, " ", end="")
+                      i_casilla.vacio and esconder_vacias else casilla.tipo, " ", end="")
             print("")
 
     def imprimir_mapa_detalle(self):

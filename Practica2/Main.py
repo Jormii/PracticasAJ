@@ -6,9 +6,9 @@ ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
 ESCALA_SPRITES = 128
 
-t = importlib.import_module("TemplateMazmorra")
-m = importlib.import_module("Mazmorra")
-c = importlib.import_module("Casilla")
+i_template = importlib.import_module("TemplateMazmorra")
+i_mazmorra = importlib.import_module("Mazmorra")
+i_casilla = importlib.import_module("Casilla")
 
 
 def main():
@@ -27,22 +27,18 @@ def main():
 
 
 def generar_mazmorra():
-    ancho = 3
-    alto = 3
-    n_tuneles = 2
-    l_max_tunnel = 5
-    template = t.TemplateMazmorra(ancho, alto, n_tuneles, l_max_tunnel)
+    ancho = 15
+    alto = 15
+    n_tuneles = 20
+    l_max_tunnel = 15
+    template = i_template.TemplateMazmorra(ancho, alto, n_tuneles, l_max_tunnel)
 
     factor = 3
     densidad_maxima = 0.8
-    generador = m.Mazmorra(template, factor, densidad_maxima)
+    generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima)
     mazmorra = generador.generar_mazmorra()
 
     return generador
-
-    # template.imprimir_mapa()
-    # print("---")
-    # generador.imprimir_mazmorra()
 
 
 def pintar_mazmorra(mazmorra):
@@ -68,11 +64,11 @@ def pintar_mazmorra(mazmorra):
     for x in range(ancho):
         for y in range(alto):
             celda = mazmorra.mazmorra[y][x]
-            if celda == c.vacio:
+            if celda == i_casilla.vacio:
                 color = (0, 0, 0)
-            elif celda == c.tunel:
+            elif celda == i_casilla.tunel:
                 color = (255 >> 1, 255 >> 1, 255 >> 1)
-            elif celda == c.habitacion:
+            elif celda == i_casilla.habitacion:
                 color = (255, 255, 255)
 
             rectangulo = (x * escala, y * escala,

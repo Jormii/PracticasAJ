@@ -1,7 +1,7 @@
 import importlib
 
-c = importlib.import_module("Casilla")
-t = importlib.import_module("TemplateMazmorra")
+i_casilla = importlib.import_module("Casilla")
+i_template = importlib.import_module("TemplateMazmorra")
 
 
 class Mazmorra(object):
@@ -73,15 +73,15 @@ class Mazmorra(object):
             x += direccion[0]
             y += direccion[1]
 
-            if self.mazmorra[y][x] == c.vacio:
-                self.mazmorra[y][x] = c.tunel
+            if self.mazmorra[y][x] == i_casilla.vacio:
+                self.mazmorra[y][x] = i_casilla.tunel
                 self.celdas_ocupadas += 1
 
                 if self.debug:
                     print("[DEBUG] Se pinta la celda ({0}, {1})".format(x, y))
 
         casilla_destino = self.template.mapa[y_mapa_destino][x_mapa_destino]
-        if casilla_destino.tipo == c.habitacion:
+        if casilla_destino.tipo == i_casilla.habitacion:
             self.anadir_habitacion(x, y)
 
         posicion_destino = (x_mapa_destino, y_mapa_destino)
@@ -105,7 +105,7 @@ class Mazmorra(object):
 
             return False
 
-        self.mazmorra[y][x] = c.habitacion
+        self.mazmorra[y][x] = i_casilla.habitacion
         self.habitaciones.append(entrada)
 
         if self.debug:
@@ -124,5 +124,5 @@ class Mazmorra(object):
         for fila in self.mazmorra:
             for casilla in fila:
                 print(" " if casilla ==
-                      c.vacio and esconder_vacias else casilla, " ", end="")
+                      i_casilla.vacio and esconder_vacias else casilla, " ", end="")
             print("")
