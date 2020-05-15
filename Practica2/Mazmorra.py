@@ -62,10 +62,14 @@ class Mazmorra(object):
 
         celdas_totales = alto * ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
-        while self.densidad < self.densidad_maxima:
-            # habitacion_aleatoria = random.choice(list(self.habitaciones.values()))
-            # self.densidad = self.celdas_ocupadas / celdas_totales
-            break
+        habitaciones_a_ampliar = list(self.habitaciones.values())
+        while self.densidad < self.densidad_maxima and len(habitaciones_a_ampliar) != 0:
+            habitacion_aleatoria = random.choice(habitaciones_a_ampliar)
+            ampliada = self.ampliar_habitacion(habitacion_aleatoria)
+            if not ampliada:
+                habitaciones_a_ampliar.remove(habitacion)
+                
+            self.densidad = self.celdas_ocupadas / celdas_totales
 
         return self.mazmorra
 
@@ -108,8 +112,10 @@ class Mazmorra(object):
         signo = 1 if random.random() > 0.5 else -1
         if aleatorio * relacion_ancho_alto > 0.5:
             direccion = (0, signo)
+            direccion_ampliacion = (1, 0)
         else:
             direccion = (signo, 0)
+            direccion_ampliacion = (0, 1)
 
         if self.debug:
             print("[DEBUG] Se va a expandir la habitacion {0} en la direccion {1}".format(
@@ -120,7 +126,7 @@ class Mazmorra(object):
             habitacion, direccion)
         x = posicion_partida[0]
         y = posicion_partida[1]
-        iteraciones = (habitacion.ancho) if direccion[0] != 0 else (
+        iteraciones = (habitacion.ancho) if direccion_ampliacion[0] != 0 else (
             habitacion.alto)
         for iteracion in range(iteraciones):
             if self.mazmorra[y][x] == i_casilla.vacio:
@@ -128,23 +134,25 @@ class Mazmorra(object):
 
             self.mazmorra[y][x] = i_casilla.habitacion if not habitacion.es_habitacion_inicial else i_casilla.inicial
 
-            x += direccion[0]
-            y += direccion[1]
-
             if self.debug:
                 print(
                     "[DEBUG] La posicion ({0}, {1}) pasa a ser una habitacion".format(x, y))
 
+            x += direccion_ampliacion[0]
+            y += direccion_ampliacion[1]
+
         # Actualizar posicion de la habitacion
         if direccion[0] == -1 or direccion[1] == -1:
             habitacion.posicion = (
-                habitacion.posicion[0] - direccion[0], habitacion.posicion[1] - direccion[1])
+                habitacion.posicion[0] + direccion[0], habitacion.posicion[1] + direccion[1])
 
         # Actualizar tamano de la habitacion
         if direccion[0] != 0:
             habitacion.ancho += 1
         else:
             habitacion.alto += 1
+
+        return True
 
     def calcular_posicion_partida(self, habitacion, direccion):
         x = habitacion.posicion[0]

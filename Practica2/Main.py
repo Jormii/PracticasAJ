@@ -15,7 +15,7 @@ def main():
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
 
-    mazmorra = generar_mazmorra()
+    mazmorra = generar_mazmorra()        
     pintar_mazmorra(mazmorra)
 
     pygame.display.flip()
@@ -32,17 +32,17 @@ def main():
 
 
 def generar_mazmorra():
-    ancho = 5
-    alto = 5
+    ancho = 3
+    alto = 3
     n_tuneles = 1
     l_max_tunnel = 1
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel)
 
-    factor = 2
+    factor = 3
     densidad_maxima = 0.8
     generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima, True)
-    mazmorra = generador.generar_mazmorra()
+    generador.generar_mazmorra()
 
     return generador
 
