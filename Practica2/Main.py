@@ -24,27 +24,34 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w:
+                    mazmorra.generar_mazmorra()
+                    pintar_mazmorra(mazmorra)
+                    pygame.display.flip()
 
 
 def generar_mazmorra():
-    ancho = 15
-    alto = 15
-    n_tuneles = 20
-    l_max_tunnel = 15
-    template = i_template.TemplateMazmorra(ancho, alto, n_tuneles, l_max_tunnel)
+    ancho = 5
+    alto = 5
+    n_tuneles = 1
+    l_max_tunnel = 1
+    template = i_template.TemplateMazmorra(
+        ancho, alto, n_tuneles, l_max_tunnel)
 
-    factor = 3
+    factor = 2
     densidad_maxima = 0.8
-    generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima)
+    generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima, True)
     mazmorra = generador.generar_mazmorra()
 
     return generador
 
 
 def pintar_mazmorra(mazmorra):
-    template_mazmorra = mazmorra.template
-    template_mazmorra.imprimir_mapa_detalle()
+    mazmorra.template.imprimir_mapa_detalle()
     mazmorra.imprimir_mazmorra()
+
+    template_mazmorra = mazmorra.template
 
     ancho = template_mazmorra.ancho * mazmorra.factor
     alto = template_mazmorra.alto * mazmorra.factor
@@ -70,18 +77,12 @@ def pintar_mazmorra(mazmorra):
                 color = (255 >> 1, 255 >> 1, 255 >> 1)
             elif celda == i_casilla.habitacion:
                 color = (255, 255, 255)
+            elif celda == i_casilla.inicial:
+                color = (255, 0, 0)
 
             rectangulo = (x * escala, y * escala,
                           escala, escala)
             pygame.draw.rect(screen, color, rectangulo, 0)
-
-    x0_mapa = template_mazmorra.posicion_inicial[0]
-    y0_mapa = template_mazmorra.posicion_inicial[1]
-    x0 = mazmorra.convertir_mapa_mazmorra(x0_mapa)
-    y0 = mazmorra.convertir_mapa_mazmorra(y0_mapa)
-    rectangulo = (x0 * escala, y0 * escala,
-                  escala, escala)
-    pygame.draw.rect(screen, (255, 0, 0), rectangulo, 0)
 
 
 if __name__ == "__main__":

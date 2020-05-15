@@ -1,7 +1,9 @@
 import importlib
+import random  # TODO: Metodos vistos en clase
 
 i_casilla = importlib.import_module("Casilla")
 i_template = importlib.import_module("TemplateMazmorra")
+i_habitacion = importlib.import_module("Habitacion")
 
 
 class Mazmorra(object):
@@ -11,14 +13,19 @@ class Mazmorra(object):
         self.densidad_maxima = densidad_maxima
         self.debug = debug
 
+        self.ancho = template.ancho * factor
+        self.alto = template.alto * factor
         self.mazmorra = []
         self.casillas_visitadas = set()
-        self.habitaciones = []
+        self.habitaciones = {}
         self.celdas_ocupadas = 0
         self.densidad = 0
 
     def generar_mazmorra(self):
+        random.seed(None)
+
         # Reiniciar variables
+        self.mazmorra.clear()
         self.habitaciones.clear()
         self.celdas_ocupadas = 1    # Casilla inicial
 
@@ -38,8 +45,6 @@ class Mazmorra(object):
         x0 = self.convertir_mapa_mazmorra(posicion_inicial_mapa[0])
         y0 = self.convertir_mapa_mazmorra(posicion_inicial_mapa[1])
 
-        self.habitaciones
-
         if self.debug:
             print("[DEBUG:Mazmorra]")
             print(
@@ -47,15 +52,19 @@ class Mazmorra(object):
 
         self.casillas_visitadas.clear()
         self.casillas_visitadas.add(posicion_inicial_mapa)
-        self.anadir_habitacion(x0, y0)
+        self.anadir_habitacion(x0, y0, True)
 
         for direccion in casilla_inicial.conexiones:
             self.pintar_tunel(x0, y0, direccion)
 
+        for habitacion in self.habitaciones.values():
+            self.ampliar_habitacion(habitacion)
+
         celdas_totales = alto * ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
         while self.densidad < self.densidad_maxima:
-            # TODO
+            # habitacion_aleatoria = random.choice(list(self.habitaciones.values()))
+            # self.densidad = self.celdas_ocupadas / celdas_totales
             break
 
         return self.mazmorra
@@ -93,20 +102,79 @@ class Mazmorra(object):
             print(
                 "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
-    def anadir_habitacion(self, x, y):
+    def ampliar_habitacion(self, habitacion):
+        relacion_ancho_alto = habitacion.ancho / habitacion.alto
+        aleatorio = random.random()
+        signo = 1 if random.random() > 0.5 else -1
+        if aleatorio * relacion_ancho_alto > 0.5:
+            direccion = (0, signo)
+        else:
+            direccion = (signo, 0)
+
+        if self.debug:
+            print("[DEBUG] Se va a expandir la habitacion {0} en la direccion {1}".format(
+                habitacion, direccion))
+
+        # TODO: Añadir comprobacion para que no se salga de los limites
+        posicion_partida = self.calcular_posicion_partida(
+            habitacion, direccion)
+        x = posicion_partida[0]
+        y = posicion_partida[1]
+        iteraciones = (habitacion.ancho) if direccion[0] != 0 else (
+            habitacion.alto)
+        for iteracion in range(iteraciones):
+            if self.mazmorra[y][x] == i_casilla.vacio:
+                self.celdas_ocupadas += 1
+
+            self.mazmorra[y][x] = i_casilla.habitacion if not habitacion.es_habitacion_inicial else i_casilla.inicial
+
+            x += direccion[0]
+            y += direccion[1]
+
+            if self.debug:
+                print(
+                    "[DEBUG] La posicion ({0}, {1}) pasa a ser una habitacion".format(x, y))
+
+        # Actualizar posicion de la habitacion
+        if direccion[0] == -1 or direccion[1] == -1:
+            habitacion.posicion = (
+                habitacion.posicion[0] - direccion[0], habitacion.posicion[1] - direccion[1])
+
+        # Actualizar tamano de la habitacion
+        if direccion[0] != 0:
+            habitacion.ancho += 1
+        else:
+            habitacion.alto += 1
+
+    def calcular_posicion_partida(self, habitacion, direccion):
+        x = habitacion.posicion[0]
+        y = habitacion.posicion[1]
+        ancho = habitacion.ancho
+        alto = habitacion.alto
+
+        if direccion[0] == 0 and direccion[1] == -1:
+            return (x, y - 1)
+        elif direccion[0] == 1 and direccion[1] == 0:
+            return (x + ancho, y)
+        elif direccion[0] == 0 and direccion[1] == 1:
+            return (x, y + alto)
+        elif direccion[0] == -1 and direccion[1] == 0:
+            return (x - 1, y)
+
+    def anadir_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)
         y_mapa = self.convertir_mazmorra_mapa(y)
 
-        entrada = ((x, y), (x_mapa, y_mapa))
-        if entrada in self.habitaciones:
+        habitacion = i_habitacion.Habitacion((x, y), (x_mapa, y_mapa), inicial)
+        if habitacion in self.habitaciones:
             if self.debug:
                 print(
                     "[DEBUG] La habitacion en ({0}, {1}) ya se ha visitado".format(x, y))
 
             return False
 
-        self.mazmorra[y][x] = i_casilla.habitacion
-        self.habitaciones.append(entrada)
+        self.mazmorra[y][x] = i_casilla.habitacion if not inicial else i_casilla.inicial
+        self.habitaciones[(x_mapa, y_mapa)] = habitacion
 
         if self.debug:
             print("[DEBUG] Se visita la habitacion ({0}, {1})".format(x, y))
@@ -119,6 +187,12 @@ class Mazmorra(object):
     def convertir_mapa_mazmorra(self, coordenada):
         factor_medios = self.factor >> 1
         return coordenada * self.factor + factor_medios
+
+    def se_saldria_de_la_mazmorra(self, x, y, direccion):
+        x += direccion[0]
+        y += direccion[1]
+
+        return x < 0 or y < 0 or x >= self.ancho or y >= self.alto
 
     def imprimir_mazmorra(self, esconder_vacias=True):
         for fila in self.mazmorra:
