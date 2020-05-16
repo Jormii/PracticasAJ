@@ -295,6 +295,35 @@ class Mazmorra(object):
             if paso > longitud_tunel:
                 continuar = False
 
+                # Crear habitacion si no hay habitaciones alreadedor
+                if self.se_saldria_de_la_mazmorra(x, y, direccion):
+                    return
+                
+                x_habitacion = x + direccion[0]
+                y_habitacion = y + direccion[1]
+                
+                x = x_habitacion - 1
+                x_final = x_habitacion + 1
+                while x <= x_final:
+                    y = y_habitacion - 1
+                    y_final = y_habitacion + 1
+                    while y <= y_final:
+                        if self.pertenece_a_la_mazmorra(x, y):
+                            if self.mazmorra[y][x] == i_casilla.habitacion or self.mazmorra[y][x] == i_casilla.inicial:
+                                return
+
+                        y += 1
+
+                    x += 1
+
+                x_mapa = self.ancho + x_habitacion
+                y_mapa = self.alto + y_habitacion
+                habitacion = i_habitacion.Habitacion(
+                    (x_habitacion, y_habitacion), (x_mapa, y_mapa), False)
+                self.habitaciones[(x_mapa, y_mapa)] = habitacion
+                self.ampliar_habitacion_aleatoriamente(habitacion)
+                self.mazmorra[y_habitacion][x_habitacion] = i_casilla.habitacion
+
     def anadir_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)
         y_mapa = self.convertir_mazmorra_mapa(y)
@@ -343,6 +372,9 @@ class Mazmorra(object):
         y += direccion[1]
 
         return x < 0 or y < 0 or x >= self.ancho or y >= self.alto
+
+    def pertenece_a_la_mazmorra(self, x, y):
+        return x >= 0 and y >= 0 and x < self.ancho and y < self.alto
 
     def imprimir_mazmorra(self, esconder_vacias=True):
         for fila in self.mazmorra:
