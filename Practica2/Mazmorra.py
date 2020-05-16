@@ -62,18 +62,24 @@ class Mazmorra(object):
 
         celdas_totales = self.alto * self.ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
-        habitaciones_a_ampliar = list(self.habitaciones.values())
-        while self.densidad < self.densidad_maxima and len(habitaciones_a_ampliar) != 0:
+        frecuencia_creacion_camino = int(1 / self.densidad_maxima)
+        iteraciones_sin_crear_caminos = 0
+        while self.densidad < self.densidad_maxima:
             # Expandir alguna habitacion
-            habitacion_aleatoria = random.choice(habitaciones_a_ampliar)
-            ampliada = self.ampliar_habitacion_aleatoriamente(habitacion_aleatoria)
-            if not ampliada:
-                habitaciones_a_ampliar.remove(habitacion_aleatoria)
+            habitacion_aleatoria = random.choice(
+                list(self.habitaciones.values()))
+            ampliada = self.ampliar_habitacion_aleatoriamente(
+                habitacion_aleatoria)
 
             # Crear un nuevo camino
-            casilla_origen = self.encontrar_tunel_aleatorio()
-            direccion = i_template.direcciones[random.randint(0, 3)]
-            self.crear_tunel(casilla_origen[0], casilla_origen[1], direccion)
+            if iteraciones_sin_crear_caminos == frecuencia_creacion_camino:
+                casilla_origen = self.encontrar_tunel_aleatorio()
+                direccion = i_template.direcciones[random.randint(0, 3)]
+                self.crear_tunel(
+                    casilla_origen[0], casilla_origen[1], direccion)
+                iteraciones_sin_crear_caminos = 0
+            else:
+                iteraciones_sin_crear_caminos += 1
 
             self.densidad = self.celdas_ocupadas / celdas_totales
 
@@ -152,6 +158,15 @@ class Mazmorra(object):
             if celda == i_casilla.habitacion or celda == i_casilla.inicial:
                 return False
 
+            # Para evitar que haya contactos entre habitaciones
+            if not self.se_saldria_de_la_mazmorra(x, y, direccion):
+                x_siguiente = x + direccion[0]
+                y_siguiente = y + direccion[1]
+                celda_siguiente = self.mazmorra[y_siguiente][x_siguiente]
+
+                if celda_siguiente == i_casilla.habitacion or celda_siguiente == i_casilla.inicial:
+                    return False
+
             x += direccion_ampliacion[0]
             y += direccion_ampliacion[1]
 
@@ -214,7 +229,8 @@ class Mazmorra(object):
         x = x0
         y = y0
         pasos_sin_girar = 0
-        longitud_tunel = random.randint(self.factor, self.template.l_max_tunel * self.factor)
+        longitud_tunel = random.randint(
+            self.factor, self.template.l_max_tunel + self.factor)
         paso = 0
         continuar = True
         while continuar:
@@ -223,8 +239,8 @@ class Mazmorra(object):
 
             # Comprobar si hacer un giro
             aleatorio = random.random()
-            probabilidad_giro = (1 - 1 / 0.15 * pasos_sin_girar + 1)
-            if probabilidad_giro < aleatorio:
+            probabilidad_giro = 1 - 1 / (0.15 * pasos_sin_girar + 1)
+            if aleatorio < probabilidad_giro:
                 direccion = self.calcular_nueva_direccion(x, y, direccion)
                 pasos_sin_girar = 0
             else:
@@ -239,7 +255,7 @@ class Mazmorra(object):
                 self.celdas_ocupadas += 1
             elif celda == i_casilla.habitacion or celda == i_casilla.inicial:
                 continuar = False
-                
+
             paso += 1
             if paso > longitud_tunel:
                 continuar = False
