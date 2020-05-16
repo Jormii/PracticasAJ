@@ -32,15 +32,15 @@ def main():
 
 
 def generar_mazmorra():
-    ancho = 3
-    alto = 3
-    n_tuneles = 1
-    l_max_tunnel = 1
+    ancho = 10
+    alto = 10
+    n_tuneles = 10
+    l_max_tunnel = 7
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel)
 
     factor = 3
-    densidad_maxima = 0.8
+    densidad_maxima = 0.5
     generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima, True)
     generador.generar_mazmorra()
 

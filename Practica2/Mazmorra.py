@@ -30,10 +30,10 @@ class Mazmorra(object):
         self.celdas_ocupadas = 1    # Casilla inicial
 
         # Generar mazmorra
-        alto = self.template.alto * self.factor
-        ancho = self.template.ancho * self.factor
-        for i in range(alto):
-            self.mazmorra.append([0] * ancho)
+        self.alto = self.template.alto * self.factor
+        self.ancho = self.template.ancho * self.factor
+        for i in range(self.alto):
+            self.mazmorra.append([0] * self.ancho)
 
         # En caso de que se llame antes a generar_mazmorra
         if not self.template.casilla_inicial:
@@ -58,17 +58,23 @@ class Mazmorra(object):
             self.pintar_tunel(x0, y0, direccion)
 
         for habitacion in self.habitaciones.values():
-            self.ampliar_habitacion(habitacion)
+            self.ampliar_habitacion_aleatoriamente(habitacion)
 
-        celdas_totales = alto * ancho
+        celdas_totales = self.alto * self.ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
         habitaciones_a_ampliar = list(self.habitaciones.values())
         while self.densidad < self.densidad_maxima and len(habitaciones_a_ampliar) != 0:
+            # Expandir alguna habitacion
             habitacion_aleatoria = random.choice(habitaciones_a_ampliar)
-            ampliada = self.ampliar_habitacion(habitacion_aleatoria)
+            ampliada = self.ampliar_habitacion_aleatoriamente(habitacion_aleatoria)
             if not ampliada:
-                habitaciones_a_ampliar.remove(habitacion)
-                
+                habitaciones_a_ampliar.remove(habitacion_aleatoria)
+
+            # Crear un nuevo camino
+            casilla_origen = self.encontrar_tunel_aleatorio()
+            direccion = i_template.direcciones[random.randint(0, 3)]
+            self.crear_tunel(casilla_origen[0], casilla_origen[1], direccion)
+
             self.densidad = self.celdas_ocupadas / celdas_totales
 
         return self.mazmorra
@@ -106,28 +112,53 @@ class Mazmorra(object):
             print(
                 "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
-    def ampliar_habitacion(self, habitacion):
+    def ampliar_habitacion_aleatoriamente(self, habitacion):
         relacion_ancho_alto = habitacion.ancho / habitacion.alto
         aleatorio = random.random()
         signo = 1 if random.random() > 0.5 else -1
+        # Ampliar verticalmente
         if aleatorio * relacion_ancho_alto > 0.5:
             direccion = (0, signo)
             direccion_ampliacion = (1, 0)
+        # Ampliar horizontalmente
         else:
             direccion = (signo, 0)
             direccion_ampliacion = (0, 1)
 
+        return self.ampliar_habitacion(habitacion, direccion)
+
+    def ampliar_habitacion(self, habitacion, direccion):
         if self.debug:
             print("[DEBUG] Se va a expandir la habitacion {0} en la direccion {1}".format(
                 habitacion, direccion))
 
-        # TODO: Añadir comprobacion para que no se salga de los limites
+        if direccion[0] != 0:
+            direccion_ampliacion = (0, 1)
+        else:
+            direccion_ampliacion = (1, 0)
+
         posicion_partida = self.calcular_posicion_partida(
             habitacion, direccion)
-        x = posicion_partida[0]
-        y = posicion_partida[1]
         iteraciones = (habitacion.ancho) if direccion_ampliacion[0] != 0 else (
             habitacion.alto)
+        # Precomprobacion para no pintar fuera de la mazmorra o sobre otra habitacion
+        x = posicion_partida[0]
+        y = posicion_partida[1]
+        for iteracion in range(iteraciones):
+            if self.se_saldria_de_la_mazmorra(x, y, direccion_ampliacion):
+                return False
+
+            celda = self.mazmorra[y][x]
+            if celda == i_casilla.habitacion or celda == i_casilla.inicial:
+                return False
+
+            x += direccion_ampliacion[0]
+            y += direccion_ampliacion[1]
+
+        # Pintar
+        x = posicion_partida[0]
+        y = posicion_partida[1]
+
         for iteracion in range(iteraciones):
             if self.mazmorra[y][x] == i_casilla.vacio:
                 self.celdas_ocupadas += 1
@@ -169,6 +200,50 @@ class Mazmorra(object):
         elif direccion[0] == -1 and direccion[1] == 0:
             return (x - 1, y)
 
+    def encontrar_tunel_aleatorio(self):
+        x = random.randint(0, self.ancho - 1)
+        y = random.randint(0, self.alto - 1)
+
+        while self.mazmorra[y][x] != i_casilla.tunel:
+            x = random.randint(0, self.ancho - 1)
+            y = random.randint(0, self.alto - 1)
+
+        return (x, y)
+
+    def crear_tunel(self, x0, y0, direccion):
+        x = x0
+        y = y0
+        pasos_sin_girar = 0
+        longitud_tunel = random.randint(self.factor, self.template.l_max_tunel * self.factor)
+        paso = 0
+        continuar = True
+        while continuar:
+            if self.se_saldria_de_la_mazmorra(x, y, direccion):
+                direccion = self.calcular_nueva_direccion(x, y, direccion)
+
+            # Comprobar si hacer un giro
+            aleatorio = random.random()
+            probabilidad_giro = (1 - 1 / 0.15 * pasos_sin_girar + 1)
+            if probabilidad_giro < aleatorio:
+                direccion = self.calcular_nueva_direccion(x, y, direccion)
+                pasos_sin_girar = 0
+            else:
+                pasos_sin_girar += 1
+
+            x += direccion[0]
+            y += direccion[1]
+
+            celda = self.mazmorra[y][x]
+            if celda == i_casilla.vacio:
+                self.mazmorra[y][x] = i_casilla.tunel
+                self.celdas_ocupadas += 1
+            elif celda == i_casilla.habitacion or celda == i_casilla.inicial:
+                continuar = False
+                
+            paso += 1
+            if paso > longitud_tunel:
+                continuar = False
+
     def anadir_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)
         y_mapa = self.convertir_mazmorra_mapa(y)
@@ -195,6 +270,22 @@ class Mazmorra(object):
     def convertir_mapa_mazmorra(self, coordenada):
         factor_medios = self.factor >> 1
         return coordenada * self.factor + factor_medios
+
+    def calcular_nueva_direccion(self, x, y, direccion):
+        # Se mueve hacia el norte o sur
+        if direccion[0] == 0:
+            # %x € [0, 1], si extremo izquierdo/derecho
+            porcentaje_en_x = x / (self.ancho - 1)
+            girar_derecha = random.random() > porcentaje_en_x
+            nueva_direccion = i_template.direcciones[1] if girar_derecha else i_template.direcciones[3]
+        # Se mueve hacia el oeste o este
+        else:
+            # %y € [0, 1], si extremo superior/inferior
+            porcentaje_en_y = y / (self.alto - 1)
+            girar_abajo = random.random() > porcentaje_en_y
+            nueva_direccion = i_template.direcciones[2] if girar_abajo else i_template.direcciones[0]
+
+        return nueva_direccion
 
     def se_saldria_de_la_mazmorra(self, x, y, direccion):
         x += direccion[0]
