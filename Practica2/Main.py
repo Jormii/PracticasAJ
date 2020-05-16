@@ -14,9 +14,10 @@ i_casilla = importlib.import_module("Casilla")
 def main():
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
+    sprites = inicializar_sprites()
 
     mazmorra = generar_mazmorra()
-    pintar_mazmorra(mazmorra)
+    pintar_mazmorra(mazmorra, sprites)
 
     pygame.display.flip()
 
@@ -27,8 +28,19 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     mazmorra.generar_mazmorra()
-                    pintar_mazmorra(mazmorra)
+                    pintar_mazmorra(mazmorra, sprites)
                     pygame.display.flip()
+
+
+def inicializar_sprites():
+    sprites = {}
+    sprites["vacio"] = pygame.image.load("./sprites/sin_conexiones.png")
+    sprites["uno"] = pygame.image.load("./sprites/una_conexion.png")
+    sprites["dos"] = pygame.image.load("./sprites/dos_conexiones.png")
+    sprites["tres"] = pygame.image.load("./sprites/tres_conexiones.png")
+    sprites["cuatro"] = pygame.image.load("./sprites/cuatro_conexiones.png")
+
+    return sprites
 
 
 def generar_mazmorra():
@@ -47,7 +59,7 @@ def generar_mazmorra():
     return generador
 
 
-def pintar_mazmorra(mazmorra):
+def pintar_mazmorra(mazmorra, sprites):
     # mazmorra.template.imprimir_mapa_detalle()
     # mazmorra.imprimir_mazmorra()
 
@@ -73,6 +85,7 @@ def pintar_mazmorra(mazmorra):
             celda = mazmorra.mazmorra[y][x]
             if celda == i_casilla.vacio:
                 color = (0, 0, 0)
+                # pintar_casilla_vacia(x, y, escala, sprites, screen)
             elif celda == i_casilla.tunel:
                 color = (255 >> 1, 255 >> 1, 255 >> 1)
             elif celda == i_casilla.habitacion:
@@ -83,6 +96,11 @@ def pintar_mazmorra(mazmorra):
             rectangulo = (x * escala, y * escala,
                           escala, escala)
             pygame.draw.rect(screen, color, rectangulo, 0)
+
+
+def pintar_casilla_vacia(x, y, escala, sprites, screen):
+    sprite = pygame.transform.scale(sprites["vacio"], (escala, escala)).convert()
+    screen.blit(sprite, (x * escala, y * escala))
 
 
 if __name__ == "__main__":
