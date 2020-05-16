@@ -147,7 +147,7 @@ class Mazmorra(object):
             habitacion, direccion)
         iteraciones = (habitacion.ancho) if direccion_ampliacion[0] != 0 else (
             habitacion.alto)
-        # Precomprobacion para no pintar fuera de la mazmorra o sobre otra habitacion
+        # Precomprobacion para que no haya contacto entre las habitaciones
         x = posicion_partida[0]
         y = posicion_partida[1]
         for iteracion in range(iteraciones):
@@ -169,6 +169,41 @@ class Mazmorra(object):
 
             x += direccion_ampliacion[0]
             y += direccion_ampliacion[1]
+
+        # Comprobacion esquinas
+        menos_direccion = (-direccion_ampliacion[0], -direccion_ampliacion[1])
+        if not self.se_saldria_de_la_mazmorra(posicion_partida[0], posicion_partida[1], menos_direccion):
+            x_esquina = posicion_partida[0] - direccion_ampliacion[0]
+            y_esquina = posicion_partida[1] - direccion_ampliacion[1]
+
+            esquina = self.mazmorra[y_esquina][x_esquina]
+            if esquina == i_casilla.habitacion or esquina == i_casilla.inicial:
+                return False
+
+            if not self.se_saldria_de_la_mazmorra(x_esquina, y_esquina, direccion):
+                x_esquina_siguiente = x_esquina + direccion[0]
+                y_esquina_siguiente = y_esquina + direccion[1]
+                esquina_siguiente = self.mazmorra[y_esquina_siguiente][x_esquina_siguiente]
+                if esquina_siguiente == i_casilla.habitacion or esquina_siguiente == i_casilla.inicial:
+                    return False
+
+        # TODO: Esta feo
+        x -= direccion_ampliacion[0]
+        y -= direccion_ampliacion[1]
+        if not self.se_saldria_de_la_mazmorra(x, y, direccion_ampliacion):
+            x_esquina = x + direccion_ampliacion[0]
+            y_esquina = y + direccion_ampliacion[1]
+
+            esquina = self.mazmorra[y_esquina][x_esquina]
+            if esquina == i_casilla.habitacion or esquina == i_casilla.inicial:
+                return False
+
+            if not self.se_saldria_de_la_mazmorra(x_esquina, y_esquina, direccion):
+                x_esquina_siguiente = x_esquina + direccion[0]
+                y_esquina_siguiente = y_esquina + direccion[1]
+                esquina_siguiente = self.mazmorra[y_esquina_siguiente][x_esquina_siguiente]
+                if esquina_siguiente == i_casilla.habitacion or esquina_siguiente == i_casilla.inicial:
+                    return False
 
         # Pintar
         x = posicion_partida[0]

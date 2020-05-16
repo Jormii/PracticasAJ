@@ -4,7 +4,7 @@ import sys
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
-ESCALA_SPRITES = 128
+ESCALA_SPRITES = 96
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
@@ -32,14 +32,14 @@ def main():
 
 
 def generar_mazmorra():
-    ancho = 5
-    alto = 5
-    n_tuneles = 16
-    l_max_tunnel = 7
+    ancho = 15
+    alto = 15
+    n_tuneles = 15
+    l_max_tunnel = 15
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel)
 
-    factor = 5
+    factor = 3
     densidad_maxima = 0.4
     generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima, False)
     generador.generar_mazmorra()
@@ -48,8 +48,8 @@ def generar_mazmorra():
 
 
 def pintar_mazmorra(mazmorra):
-    mazmorra.template.imprimir_mapa_detalle()
-    mazmorra.imprimir_mazmorra()
+    # mazmorra.template.imprimir_mapa_detalle()
+    # mazmorra.imprimir_mazmorra()
 
     template_mazmorra = mazmorra.template
 
