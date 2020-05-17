@@ -2,6 +2,8 @@ vacio = 0
 tunel = 1
 habitacion = 2
 inicial = 3
+tesoro = 4
+
 
 class Casilla(object):
     def __init__(self):

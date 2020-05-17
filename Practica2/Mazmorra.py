@@ -8,10 +8,11 @@ i_lcm = importlib.import_module("LCM")
 
 
 class Mazmorra(object):
-    def __init__(self, template, factor, densidad_maxima, debug=False):
+    def __init__(self, template, factor, densidad_maxima, lista_tesoros, debug=False):
         self.template = template
         self.factor = factor
         self.densidad_maxima = densidad_maxima
+        self.lista_tesoros = lista_tesoros
         self.debug = debug
 
         self.ancho = template.ancho * factor
@@ -61,7 +62,8 @@ class Mazmorra(object):
 
         celdas_totales = self.alto * self.ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
-        frecuencia_creacion_camino = int(1 / self.densidad_maxima)
+        # frecuencia_creacion_camino = int(1 / self.densidad_maxima)
+        frecuencia_creacion_camino = 0
         iteraciones_sin_crear_caminos = 0
         while self.densidad < self.densidad_maxima:
             # Expandir alguna habitacion
@@ -83,6 +85,8 @@ class Mazmorra(object):
                 iteraciones_sin_crear_caminos += 1
 
             self.densidad = self.celdas_ocupadas / celdas_totales
+
+        self.crear_tesoros()
 
         return self.mazmorra
 
@@ -265,7 +269,8 @@ class Mazmorra(object):
         x = x0
         y = y0
         pasos_sin_girar = 0
-        longitud_tunel = i_vegas.random_las_vegas(self.factor, self.template.l_max_tunel + self.factor)
+        longitud_tunel = i_vegas.random_las_vegas(
+            self.factor, self.template.l_max_tunel + self.factor)
         paso = 0
         continuar = True
         while continuar:
@@ -323,6 +328,37 @@ class Mazmorra(object):
                 self.habitaciones[(x_mapa, y_mapa)] = habitacion
                 self.ampliar_habitacion_aleatoriamente(habitacion)
                 self.mazmorra[y_habitacion][x_habitacion] = i_casilla.habitacion
+
+    def crear_tesoros(self):
+        n_habitaciones = len(self.habitaciones)
+        celdas_habitaciones = 0
+        for habitacion in self.habitaciones.values():
+            celdas = habitacion.ancho * habitacion.alto
+            celdas_habitaciones += celdas
+
+        media = celdas_habitaciones / n_habitaciones
+
+        for habitacion in self.habitaciones.values():
+            celdas = habitacion.ancho * habitacion.alto
+            if celdas < media:
+                continue
+            
+            relacion = celdas / media * 100
+            aleatorio = i_vegas.random_las_vegas(0, 100)
+            if aleatorio < relacion - 100:
+                self.crear_tesoro(habitacion)
+
+    def crear_tesoro(self, habitacion):
+        indice_aleatorio = i_vegas.random_las_vegas(0, len(self.lista_tesoros))
+        tesoros = self.lista_tesoros[indice_aleatorio]
+        tesoro = tesoros.obtener_tesoro()
+
+        posicion_tesoro = habitacion.posicion_aleatoria()
+        x = posicion_tesoro[0]
+        y = posicion_tesoro[1]
+        self.mazmorra[y][x] = i_casilla.tesoro
+        
+        print("Se crea el tesoro {0} en {1}".format(tesoro, posicion_tesoro))
 
     def anadir_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)

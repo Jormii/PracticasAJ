@@ -1,3 +1,8 @@
+import importlib
+
+i_vegas = importlib.import_module("LasVegas")
+
+
 class Habitacion(object):
     def __init__(self, posicion, posicion_mapa, es_habitacion_inicial):
         self.posicion = posicion
@@ -5,6 +10,13 @@ class Habitacion(object):
         self.ancho = 1
         self.alto = 1
         self.es_habitacion_inicial = es_habitacion_inicial
+
+    def posicion_aleatoria(self):
+        x = i_vegas.random_las_vegas(
+            self.posicion[0], self.posicion[0] + self.ancho)
+        y = i_vegas.random_las_vegas(
+            self.posicion[1], self.posicion[1] + self.alto)
+        return (x, y)
 
     def casilla_en_habitacion(self, x, y):
         ancho_fin = self.posicion[0] + self.ancho

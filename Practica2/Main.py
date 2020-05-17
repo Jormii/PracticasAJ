@@ -9,6 +9,7 @@ ESCALA_SPRITES = 96
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
 i_casilla = importlib.import_module("Casilla")
+i_tesoro = importlib.import_module("Tesoro")
 
 
 def main():
@@ -45,16 +46,30 @@ def inicializar_sprites():
 
 
 def generar_mazmorra():
-    ancho = 15
-    alto = 15
-    n_tuneles = 15
-    l_max_tunnel = 15
+    ancho = 20
+    alto = 10
+    n_tuneles = 20
+    l_max_tunnel = 30
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel)
 
+    lote_tesoros_1 = i_tesoro.Tesoros(
+        [(1, i_tesoro.Tesoro("Tesoro_A")),
+         (1, i_tesoro.Tesoro("Tesoro B"))
+         ]
+    )
+    lote_tesoros_2 = i_tesoro.Tesoros(
+        [(1, i_tesoro.Tesoro("Tesoro_1")),
+         (1, i_tesoro.Tesoro("Tesoro 2")),
+         (2, i_tesoro.Tesoro("Tesoro 3"))
+         ]
+    )
+    lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
+
     factor = 3
     densidad_maxima = 0.4
-    generador = i_mazmorra.Mazmorra(template, factor, densidad_maxima, False)
+    generador = i_mazmorra.Mazmorra(
+        template, factor, densidad_maxima, lista_tesoros)
     generador.generar_mazmorra()
 
     return generador
@@ -93,6 +108,8 @@ def pintar_mazmorra(mazmorra, sprites):
                 color = (255, 255, 255)
             elif celda == i_casilla.inicial:
                 color = (255, 0, 0)
+            elif celda == i_casilla.tesoro:
+                color = (0, 255, 0)
 
             rectangulo = (x * escala, y * escala,
                           escala, escala)
