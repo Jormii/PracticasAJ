@@ -46,8 +46,8 @@ def inicializar_sprites():
 
 
 def generar_mazmorra():
-    ancho = 20
-    alto = 10
+    ancho = 30
+    alto = 30
     n_tuneles = 20
     l_max_tunnel = 30
     template = i_template.TemplateMazmorra(
@@ -55,18 +55,18 @@ def generar_mazmorra():
 
     lote_tesoros_1 = i_tesoro.Tesoros(
         [(1, i_tesoro.Tesoro("Tesoro_A")),
-         (1, i_tesoro.Tesoro("Tesoro B"))
+         (1, i_tesoro.Tesoro("Tesoro_B"))
          ]
     )
     lote_tesoros_2 = i_tesoro.Tesoros(
         [(1, i_tesoro.Tesoro("Tesoro_1")),
-         (1, i_tesoro.Tesoro("Tesoro 2")),
-         (2, i_tesoro.Tesoro("Tesoro 3"))
+         (1, i_tesoro.Tesoro("Tesoro_2")),
+         (2, i_tesoro.Tesoro("Tesoro_3"))
          ]
     )
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
-    factor = 3
+    factor = 1
     densidad_maxima = 0.4
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros)

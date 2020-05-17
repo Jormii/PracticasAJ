@@ -5,6 +5,7 @@ i_template = importlib.import_module("TemplateMazmorra")
 i_habitacion = importlib.import_module("Habitacion")
 i_vegas = importlib.import_module("LasVegas")
 i_lcm = importlib.import_module("LCM")
+i_dfd = importlib.import_module("DiscreteFiniteDistribution")
 
 
 class Mazmorra(object):
@@ -342,7 +343,7 @@ class Mazmorra(object):
             celdas = habitacion.ancho * habitacion.alto
             if celdas < media:
                 continue
-            
+
             relacion = celdas / media * 100
             aleatorio = i_vegas.random_las_vegas(0, 100)
             if aleatorio < relacion - 100:
@@ -357,7 +358,7 @@ class Mazmorra(object):
         x = posicion_tesoro[0]
         y = posicion_tesoro[1]
         self.mazmorra[y][x] = i_casilla.tesoro
-        
+
         print("Se crea el tesoro {0} en {1}".format(tesoro, posicion_tesoro))
 
     def anadir_habitacion(self, x, y, inicial=False):
