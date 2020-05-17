@@ -1,7 +1,7 @@
-import random  # TODO: Aleatorios vistos en clase
 import importlib
 
 i_casilla = importlib.import_module("Casilla")
+i_vegas = importlib.import_module("LasVegas")
 
 direcciones = {
     0: (0, -1),    # Norte
@@ -37,9 +37,8 @@ class TemplateMazmorra(object):
                 self.ancho, self.alto))
 
         # Calcular posicion inicial
-        random.seed(None)
-        x0 = random.randint(0, self.ancho - 1)
-        y0 = random.randint(0, self.alto - 1)
+        x0 = i_vegas.random_las_vegas(0, self.ancho)
+        y0 = i_vegas.random_las_vegas(0, self.alto)
 
         self.casilla_inicial = self.mapa[y0][x0]
         self.casilla_inicial.tipo = i_casilla.habitacion
@@ -59,9 +58,11 @@ class TemplateMazmorra(object):
         return self.mapa, self.casilla_inicial
 
     def crear_tunel(self, x0, y0, t):
-        longitud = random.randint(1, self.l_max_tunel)
-        punto_giro = random.randint(1, longitud)
-        direccion_aleatoria = direcciones[random.randint(0, 3)]
+        longitud = i_vegas.random_las_vegas(1, self.l_max_tunel + 1)
+        punto_giro = i_vegas.random_las_vegas(1, longitud + 1)
+
+        indice_aleatorio = i_vegas.random_las_vegas(0, len(direcciones))
+        direccion_aleatoria = direcciones[indice_aleatorio]
         direccion = self.calcular_nueva_direccion(x0, y0, direccion_aleatoria)
 
         if self.debug:
@@ -152,14 +153,14 @@ class TemplateMazmorra(object):
         # Se mueve hacia el norte o sur
         if direccion[0] == 0:
             # %x € [0, 1], si extremo izquierdo/derecho
-            porcentaje_en_x = x / (self.ancho - 1)
-            girar_derecha = random.random() > porcentaje_en_x
+            porcentaje_en_x = x / (self.ancho - 1) * 100
+            girar_derecha = i_vegas.random_las_vegas(0, 100) > porcentaje_en_x
             nueva_direccion = direcciones[1] if girar_derecha else direcciones[3]
         # Se mueve hacia el oeste o este
         else:
             # %y € [0, 1], si extremo superior/inferior
-            porcentaje_en_y = y / (self.alto - 1)
-            girar_abajo = random.random() > porcentaje_en_y
+            porcentaje_en_y = y / (self.alto - 1) * 100
+            girar_abajo = i_vegas.random_las_vegas(0, 100) > porcentaje_en_y
             nueva_direccion = direcciones[2] if girar_abajo else direcciones[0]
 
         return nueva_direccion

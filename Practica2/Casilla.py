@@ -12,6 +12,9 @@ class Casilla(object):
     def anadir_conexion(self, direccion):
         self.conexiones.add(direccion)
 
+    def es_habitacion(self):
+        return self.tipo == habitacion or self.tipo == inicial
+
     def __repr__(self):
         if self.tipo == vacio:
             return "[0]"

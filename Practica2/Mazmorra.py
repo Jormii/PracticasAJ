@@ -1,9 +1,10 @@
 import importlib
-import random  # TODO: Metodos vistos en clase
 
 i_casilla = importlib.import_module("Casilla")
 i_template = importlib.import_module("TemplateMazmorra")
 i_habitacion = importlib.import_module("Habitacion")
+i_vegas = importlib.import_module("LasVegas")
+i_lcm = importlib.import_module("LCM")
 
 
 class Mazmorra(object):
@@ -22,8 +23,6 @@ class Mazmorra(object):
         self.densidad = 0
 
     def generar_mazmorra(self):
-        random.seed(None)
-
         # Reiniciar variables
         self.mazmorra.clear()
         self.habitaciones.clear()
@@ -66,15 +65,17 @@ class Mazmorra(object):
         iteraciones_sin_crear_caminos = 0
         while self.densidad < self.densidad_maxima:
             # Expandir alguna habitacion
-            habitacion_aleatoria = random.choice(
-                list(self.habitaciones.values()))
+            indice = i_vegas.random_las_vegas(0, len(self.habitaciones))
+            habitacion_aleatoria = list(self.habitaciones.values())[indice]
             ampliada = self.ampliar_habitacion_aleatoriamente(
                 habitacion_aleatoria)
 
             # Crear un nuevo camino
             if iteraciones_sin_crear_caminos == frecuencia_creacion_camino:
                 casilla_origen = self.encontrar_tunel_aleatorio()
-                direccion = i_template.direcciones[random.randint(0, 3)]
+                indice_direcion = i_vegas.random_las_vegas(
+                    0, len(i_template.direcciones))
+                direccion = i_template.direcciones[indice_direcion]
                 self.crear_tunel(
                     casilla_origen[0], casilla_origen[1], direccion)
                 iteraciones_sin_crear_caminos = 0
@@ -120,10 +121,10 @@ class Mazmorra(object):
 
     def ampliar_habitacion_aleatoriamente(self, habitacion):
         relacion_ancho_alto = habitacion.ancho / habitacion.alto
-        aleatorio = random.random()
-        signo = 1 if random.random() > 0.5 else -1
+        aleatorio = i_vegas.random_las_vegas(0, 100)
+        signo = 1 if aleatorio > 50 else -1
         # Ampliar verticalmente
-        if aleatorio * relacion_ancho_alto > 0.5:
+        if aleatorio * relacion_ancho_alto > 50:
             direccion = (0, signo)
             direccion_ampliacion = (1, 0)
         # Ampliar horizontalmente
@@ -251,12 +252,12 @@ class Mazmorra(object):
             return (x - 1, y)
 
     def encontrar_tunel_aleatorio(self):
-        x = random.randint(0, self.ancho - 1)
-        y = random.randint(0, self.alto - 1)
+        x = i_vegas.random_las_vegas(0, self.ancho)
+        y = i_vegas.random_las_vegas(0, self.alto)
 
         while self.mazmorra[y][x] != i_casilla.tunel:
-            x = random.randint(0, self.ancho - 1)
-            y = random.randint(0, self.alto - 1)
+            x = i_vegas.random_las_vegas(0, self.ancho)
+            y = i_vegas.random_las_vegas(0, self.alto)
 
         return (x, y)
 
@@ -264,8 +265,7 @@ class Mazmorra(object):
         x = x0
         y = y0
         pasos_sin_girar = 0
-        longitud_tunel = random.randint(
-            self.factor, self.template.l_max_tunel + self.factor)
+        longitud_tunel = i_vegas.random_las_vegas(self.factor, self.template.l_max_tunel + self.factor)
         paso = 0
         continuar = True
         while continuar:
@@ -273,8 +273,8 @@ class Mazmorra(object):
                 direccion = self.calcular_nueva_direccion(x, y, direccion)
 
             # Comprobar si hacer un giro
-            aleatorio = random.random()
-            probabilidad_giro = 1 - 1 / (0.15 * pasos_sin_girar + 1)
+            aleatorio = i_vegas.random_las_vegas(0, 100)
+            probabilidad_giro = 1 - 1 / (0.15 * pasos_sin_girar + 1) * 100
             if aleatorio < probabilidad_giro:
                 direccion = self.calcular_nueva_direccion(x, y, direccion)
                 pasos_sin_girar = 0
@@ -298,10 +298,10 @@ class Mazmorra(object):
                 # Crear habitacion si no hay habitaciones alreadedor
                 if self.se_saldria_de_la_mazmorra(x, y, direccion):
                     return
-                
+
                 x_habitacion = x + direccion[0]
                 y_habitacion = y + direccion[1]
-                
+
                 x = x_habitacion - 1
                 x_final = x_habitacion + 1
                 while x <= x_final:
@@ -355,14 +355,14 @@ class Mazmorra(object):
         # Se mueve hacia el norte o sur
         if direccion[0] == 0:
             # %x € [0, 1], si extremo izquierdo/derecho
-            porcentaje_en_x = x / (self.ancho - 1)
-            girar_derecha = random.random() > porcentaje_en_x
+            porcentaje_en_x = x / (self.ancho - 1) * 100
+            girar_derecha = i_vegas.random_las_vegas(0, 100) > porcentaje_en_x
             nueva_direccion = i_template.direcciones[1] if girar_derecha else i_template.direcciones[3]
         # Se mueve hacia el oeste o este
         else:
             # %y € [0, 1], si extremo superior/inferior
-            porcentaje_en_y = y / (self.alto - 1)
-            girar_abajo = random.random() > porcentaje_en_y
+            porcentaje_en_y = y / (self.alto - 1) * 100
+            girar_abajo = i_vegas.random_las_vegas(0, 100) > porcentaje_en_y
             nueva_direccion = i_template.direcciones[2] if girar_abajo else i_template.direcciones[0]
 
         return nueva_direccion

@@ -14,7 +14,8 @@ i_casilla = importlib.import_module("Casilla")
 def main():
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
-    sprites = inicializar_sprites()
+    # sprites = inicializar_sprites()
+    sprites = {}
 
     mazmorra = generar_mazmorra()
     pintar_mazmorra(mazmorra, sprites)
@@ -99,7 +100,8 @@ def pintar_mazmorra(mazmorra, sprites):
 
 
 def pintar_casilla_vacia(x, y, escala, sprites, screen):
-    sprite = pygame.transform.scale(sprites["vacio"], (escala, escala)).convert()
+    sprite = pygame.transform.scale(
+        sprites["vacio"], (escala, escala)).convert()
     screen.blit(sprite, (x * escala, y * escala))
 
 
