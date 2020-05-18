@@ -34,6 +34,9 @@ class Casilla(object):
         self.tipo = TiposCasilla.HABITACION
         self.es_casilla_inicial = inicial
 
+    def anadir_conexion(self, direccion):
+        self.conexiones.add(direccion)
+
     def calcular_conexiones(self, matriz, ancho, alto):
         if self.tipo == TiposCasilla.VACIA:
             return

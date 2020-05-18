@@ -50,8 +50,8 @@ def generar_mazmorra():
 
     ancho = 3
     alto = 3
-    n_tuneles = 2
-    l_max_tunnel = 1
+    n_tuneles = 3
+    l_max_tunnel = 3
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
