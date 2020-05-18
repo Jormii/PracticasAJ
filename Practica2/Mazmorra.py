@@ -33,8 +33,12 @@ class Mazmorra(object):
         # Generar mazmorra
         self.alto = self.template.alto * self.factor
         self.ancho = self.template.ancho * self.factor
-        for i in range(self.alto):
+        for y in range(self.alto):
             self.mazmorra.append([0] * self.ancho)
+            for x in range(self.ancho):
+                posicion = (x, y)
+                casilla = i_casilla.Casilla(posicion)
+                self.mazmorra[y][x] = casilla
 
         # En caso de que se llame antes a generar_mazmorra
         if not self.template.casilla_inicial:
@@ -359,7 +363,9 @@ class Mazmorra(object):
         y = posicion_tesoro[1]
         self.mazmorra[y][x] = i_casilla.tesoro
 
-        print("Se crea el tesoro {0} en {1}".format(tesoro, posicion_tesoro))
+        if self.debug:
+            print("Se crea el tesoro {0} en {1}".format(
+                tesoro, posicion_tesoro))
 
     def anadir_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)

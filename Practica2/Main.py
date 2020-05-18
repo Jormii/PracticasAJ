@@ -4,7 +4,7 @@ import sys
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
-ESCALA_SPRITES = 96
+ESCALA_SPRITES = 24
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
@@ -46,12 +46,14 @@ def inicializar_sprites():
 
 
 def generar_mazmorra():
-    ancho = 30
-    alto = 30
-    n_tuneles = 20
-    l_max_tunnel = 30
+    debug = True
+    
+    ancho = 6
+    alto = 6
+    n_tuneles = 3
+    l_max_tunnel = 4
     template = i_template.TemplateMazmorra(
-        ancho, alto, n_tuneles, l_max_tunnel)
+        ancho, alto, n_tuneles, l_max_tunnel, debug)
 
     lote_tesoros_1 = i_tesoro.Tesoros(
         [(1, i_tesoro.Tesoro("Tesoro_A")),
@@ -66,7 +68,7 @@ def generar_mazmorra():
     )
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
-    factor = 1
+    factor = 3
     densidad_maxima = 0.4
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros)
