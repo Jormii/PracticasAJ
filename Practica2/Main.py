@@ -46,12 +46,12 @@ def inicializar_sprites():
 
 
 def generar_mazmorra():
-    debug = True
+    debug = False
 
-    ancho = 3
-    alto = 3
-    n_tuneles = 3
-    l_max_tunnel = 3
+    ancho = 8
+    alto = 8
+    n_tuneles = 10
+    l_max_tunnel = 15
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
@@ -69,7 +69,7 @@ def generar_mazmorra():
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
     factor = 3
-    densidad_maxima = 0.4
+    densidad_maxima = 0.6
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros)
     generador.generar_mazmorra()
@@ -78,7 +78,7 @@ def generar_mazmorra():
 
 
 def pintar_mazmorra(mazmorra, sprites):
-    mazmorra.template.imprimir_mapa_detalle()
+    # mazmorra.template.imprimir_mapa_detalle()
     # mazmorra.imprimir_mazmorra()
 
     template_mazmorra = mazmorra.template
