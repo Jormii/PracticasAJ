@@ -26,6 +26,7 @@ class Casilla(object):
         self.tipo = TiposCasilla.VACIA
         self.es_casilla_inicial = False
         self.conexiones = set()
+        self.tesoro = None
 
     def crear_tunel(self):
         self.tipo = TiposCasilla.TUNEL
@@ -33,6 +34,10 @@ class Casilla(object):
     def crear_habitacion(self, inicial=False):
         self.tipo = TiposCasilla.HABITACION
         self.es_casilla_inicial = inicial
+
+    def crear_tesoro(self, tesoro):
+        self.tipo = TiposCasilla.TESORO
+        self.tesoro = tesoro
 
     def anadir_conexion(self, direccion):
         self.conexiones.add(direccion)

@@ -15,8 +15,7 @@ i_tesoro = importlib.import_module("Tesoro")
 def main():
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
-    # sprites = inicializar_sprites()
-    sprites = {}
+    sprites = inicializar_sprites()
 
     mazmorra = generar_mazmorra()
     pintar_mazmorra(mazmorra, sprites)
@@ -36,11 +35,11 @@ def main():
 
 def inicializar_sprites():
     sprites = {}
-    sprites["vacio"] = pygame.image.load("./sprites/sin_conexiones.png")
-    sprites["uno"] = pygame.image.load("./sprites/una_conexion.png")
-    sprites["dos"] = pygame.image.load("./sprites/dos_conexiones.png")
-    sprites["tres"] = pygame.image.load("./sprites/tres_conexiones.png")
-    sprites["cuatro"] = pygame.image.load("./sprites/cuatro_conexiones.png")
+    sprites["vacia"] = pygame.image.load("./tiles/14.png")
+    sprites["uno"] = pygame.image.load("./tiles/6.png")
+    # sprites["dos"] = pygame.image.load("./tiles/dos_conexiones.png")
+    # sprites["tres"] = pygame.image.load("./tiles/tres_conexiones.png")
+    # sprites["cuatro"] = pygame.image.load("./tiles/cuatro_conexiones.png")
 
     return sprites
 
@@ -100,28 +99,73 @@ def pintar_mazmorra(mazmorra, sprites):
 
     for x in range(ancho):
         for y in range(alto):
-            celda = mazmorra.mazmorra[y][x]
-            if celda.esta_vacia():
-                color = (0, 0, 0)
-                # pintar_casilla_vacia(x, y, escala, sprites, screen)
-            elif celda.es_tunel():
-                color = (255 >> 1, 255 >> 1, 255 >> 1)
-            elif celda.es_habitacion() and not celda.es_casilla_inicial:
-                color = (255, 255, 255)
-            elif celda.es_casilla_inicial:
-                color = (255, 0, 0)
-            elif celda == i_casilla.tesoro:
-                color = (0, 255, 0)
-
-            rectangulo = (x * escala, y * escala,
-                          escala, escala)
-            pygame.draw.rect(screen, color, rectangulo, 0)
+            casilla = mazmorra.mazmorra[y][x]
+            n_conexiones = len(casilla.conexiones)
+            if n_conexiones == 0:
+                pintar_casilla_vacia(x, y, escala, sprites, screen)
+            if n_conexiones == 1:
+                pintar_casilla_una_conexion(x, y, casilla, escala, sprites, screen)
+            if n_conexiones == 2:
+                color = color_basico(casilla)
+                rectangulo = (x * escala, y * escala,
+                              escala, escala)
+                pygame.draw.rect(screen, color, rectangulo, 0)
+                # pintar_casilla_dos_conexiones(x, y, escala, sprites, screen)
+            if n_conexiones == 3:
+                color = color_basico(casilla)
+                rectangulo = (x * escala, y * escala,
+                              escala, escala)
+                pygame.draw.rect(screen, color, rectangulo, 0)
+                # pintar_casilla_tres_conexiones(x, y, escala, sprites, screen)
+            if n_conexiones == 4:
+                color = color_basico(casilla)
+                rectangulo = (x * escala, y * escala,
+                              escala, escala)
+                pygame.draw.rect(screen, color, rectangulo, 0)
+                # pintar_casilla_cuatro_conexiones(x, y, escala, sprites, screen)
 
 
 def pintar_casilla_vacia(x, y, escala, sprites, screen):
     sprite = pygame.transform.scale(
-        sprites["vacio"], (escala, escala)).convert()
+        sprites["vacia"], (escala, escala)).convert()
     screen.blit(sprite, (x * escala, y * escala))
+
+
+def pintar_casilla_una_conexion(x, y, casilla, escala, sprites, screen):
+    conexion = list(casilla.conexiones)[0]
+    rotacion = 0
+    
+    sprite = pygame.transform.scale(
+        sprites["uno"], (escala, escala)).convert()
+    sprite = pygame.transform.rotate(sprites["uno"], rotacion).convert()
+    screen.blit(sprite, (x * escala, y * escala))
+
+
+def pintar_casilla_dos_conexiones(x, y, escala, sprites, screen):
+    x = 0
+
+
+def pintar_casilla_tres_conexiones(x, y, escala, sprites, screen):
+    x = 0
+
+
+def pintar_casilla_cuatro_conexiones(x, y, escala, sprites, screen):
+    x = 0
+
+
+def color_basico(casilla):
+    if casilla.esta_vacia():
+        color = (0, 0, 0)
+    elif casilla.es_tunel():
+        color = (255 >> 1, 255 >> 1, 255 >> 1)
+    elif casilla.almacena_tesoro():
+        color = (0, 255, 0)
+    elif casilla.es_casilla_inicial:
+        color = (255, 0, 0)
+    elif casilla.es_habitacion():
+        color = (255, 255, 255)
+
+    return color
 
 
 if __name__ == "__main__":
