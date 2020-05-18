@@ -47,11 +47,11 @@ def inicializar_sprites():
 
 def generar_mazmorra():
     debug = True
-    
-    ancho = 6
-    alto = 6
-    n_tuneles = 3
-    l_max_tunnel = 4
+
+    ancho = 3
+    alto = 3
+    n_tuneles = 2
+    l_max_tunnel = 1
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
@@ -78,7 +78,7 @@ def generar_mazmorra():
 
 
 def pintar_mazmorra(mazmorra, sprites):
-    # mazmorra.template.imprimir_mapa_detalle()
+    mazmorra.template.imprimir_mapa_detalle()
     # mazmorra.imprimir_mazmorra()
 
     template_mazmorra = mazmorra.template
@@ -101,14 +101,14 @@ def pintar_mazmorra(mazmorra, sprites):
     for x in range(ancho):
         for y in range(alto):
             celda = mazmorra.mazmorra[y][x]
-            if celda == i_casilla.vacio:
+            if celda.esta_vacia():
                 color = (0, 0, 0)
                 # pintar_casilla_vacia(x, y, escala, sprites, screen)
-            elif celda == i_casilla.tunel:
+            elif celda.es_tunel():
                 color = (255 >> 1, 255 >> 1, 255 >> 1)
-            elif celda == i_casilla.habitacion:
+            elif celda.es_habitacion() and not celda.es_casilla_inicial:
                 color = (255, 255, 255)
-            elif celda == i_casilla.inicial:
+            elif celda.es_casilla_inicial:
                 color = (255, 0, 0)
             elif celda == i_casilla.tesoro:
                 color = (0, 255, 0)

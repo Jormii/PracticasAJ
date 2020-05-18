@@ -51,15 +51,21 @@ class Casilla(object):
             if casilla.tipo != TiposCasilla.VACIA:
                 self.conexiones.add(direccion)
 
+    def esta_vacia(self):
+        return self.tipo == TiposCasilla.VACIA
+
     def es_tunel(self):
         return self.tipo == TiposCasilla.TUNEL
 
     def es_habitacion(self):
         return self.tipo == TiposCasilla.HABITACION or self.tipo == TiposCasilla.TESORO
 
+    def almacena_tesoro(self):
+        return self.tipo == TiposCasilla.TESORO
+
     def __repr__(self):
         if self.tipo == TiposCasilla.VACIA:
             return "[0]"
 
         g = self.conexiones if len(self.conexiones) != 0 else "[]"
-        return "[{0}, {1}]".format(self.tipo, g)
+        return "[{0}, {1}]".format(self.tipo.value, g)

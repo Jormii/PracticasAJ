@@ -25,6 +25,28 @@ class Mazmorra(object):
         self.densidad = 0
 
     def generar_mazmorra(self):
+        self.inicializar_mazmorra()
+        x0, y0 = self.obtener_posicion_inicial()
+
+        if self.debug:
+            print("[DEBUG:Mazmorra]")
+            print(
+                "[DEBUG] Creando mazmorra a partir de la posicion ({0}, {1})".format(x0, y0))
+
+        self.casillas_visitadas.clear()
+        self.casillas_visitadas.add((x0, y0))
+        self.crear_habitacion(x0, y0, True)
+
+        casilla_inicial = self.template.casilla_inicial
+        for direccion in casilla_inicial.conexiones:
+            self.pintar_tunel(x0, y0, direccion)
+
+        # self.expandir_mazmorra()
+        # self.crear_tesoros()
+
+        return self.mazmorra
+
+    def inicializar_mazmorra(self):
         # Reiniciar variables
         self.mazmorra.clear()
         self.habitaciones.clear()
@@ -44,27 +66,50 @@ class Mazmorra(object):
         if not self.template.casilla_inicial:
             self.template.random_walk()
 
+    def obtener_posicion_inicial(self):
         casilla_inicial = self.template.casilla_inicial
 
-        posicion_inicial_mapa = self.template.posicion_inicial
+        posicion_inicial_mapa = self.template.casilla_inicial.posicion
         x0 = self.convertir_mapa_mazmorra(posicion_inicial_mapa[0])
         y0 = self.convertir_mapa_mazmorra(posicion_inicial_mapa[1])
 
+        return x0, y0
+
+    def pintar_tunel(self, x, y, direccion):
         if self.debug:
-            print("[DEBUG:Mazmorra]")
+            print("[DEBUG] Pintando tunel desde ({0}, {1}) en direccion {2}".format(
+                x, y, direccion))
+
+        x_mapa_destino = self.convertir_mazmorra_mapa(x) + direccion[0]
+        y_mapa_destino = self.convertir_mazmorra_mapa(y) + direccion[1]
+        x_destino = self.convertir_mapa_mazmorra(x_mapa_destino)
+        y_destino = self.convertir_mapa_mazmorra(y_mapa_destino)
+        while not(x == x_destino and y == y_destino):
+            x += direccion[0]
+            y += direccion[1]
+
+            casilla = self.mazmorra[y][x]
+            if casilla.esta_vacia():
+                casilla.crear_tunel()
+                self.celdas_ocupadas += 1
+
+                if self.debug:
+                    print("[DEBUG] Se pinta la celda ({0}, {1})".format(x, y))
+
+        casilla_destino = self.template.mapa[y_mapa_destino][x_mapa_destino]
+        if casilla_destino.es_habitacion():
+            self.crear_habitacion(x, y)
+
+        posicion_destino = (x_mapa_destino, y_mapa_destino)
+        if posicion_destino not in self.casillas_visitadas:
+            self.casillas_visitadas.add(posicion_destino)
+            for giro in casilla_destino.conexiones:
+                self.pintar_tunel(x, y, giro)
+        elif self.debug:
             print(
-                "[DEBUG] Creando mazmorra a partir de la posicion ({0}, {1})".format(x0, y0))
+                "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
-        self.casillas_visitadas.clear()
-        self.casillas_visitadas.add(posicion_inicial_mapa)
-        self.anadir_habitacion(x0, y0, True)
-
-        for direccion in casilla_inicial.conexiones:
-            self.pintar_tunel(x0, y0, direccion)
-
-        for habitacion in self.habitaciones.values():
-            self.ampliar_habitacion_aleatoriamente(habitacion)
-
+    def expandir_mazmorra(self):
         celdas_totales = self.alto * self.ancho
         self.densidad = self.celdas_ocupadas / celdas_totales
         # frecuencia_creacion_camino = int(1 / self.densidad_maxima)
@@ -90,43 +135,6 @@ class Mazmorra(object):
                 iteraciones_sin_crear_caminos += 1
 
             self.densidad = self.celdas_ocupadas / celdas_totales
-
-        self.crear_tesoros()
-
-        return self.mazmorra
-
-    def pintar_tunel(self, x, y, direccion):
-        if self.debug:
-            print("[DEBUG] Pintando tunel desde ({0}, {1}) en direccion {2}".format(
-                x, y, direccion))
-
-        x_mapa_destino = self.convertir_mazmorra_mapa(x) + direccion[0]
-        y_mapa_destino = self.convertir_mazmorra_mapa(y) + direccion[1]
-        x_destino = self.convertir_mapa_mazmorra(x_mapa_destino)
-        y_destino = self.convertir_mapa_mazmorra(y_mapa_destino)
-        while not(x == x_destino and y == y_destino):
-            x += direccion[0]
-            y += direccion[1]
-
-            if self.mazmorra[y][x] == i_casilla.vacio:
-                self.mazmorra[y][x] = i_casilla.tunel
-                self.celdas_ocupadas += 1
-
-                if self.debug:
-                    print("[DEBUG] Se pinta la celda ({0}, {1})".format(x, y))
-
-        casilla_destino = self.template.mapa[y_mapa_destino][x_mapa_destino]
-        if casilla_destino.tipo == i_casilla.habitacion:
-            self.anadir_habitacion(x, y)
-
-        posicion_destino = (x_mapa_destino, y_mapa_destino)
-        if posicion_destino not in self.casillas_visitadas:
-            self.casillas_visitadas.add(posicion_destino)
-            for giro in casilla_destino.conexiones:
-                self.pintar_tunel(x, y, giro)
-        elif self.debug:
-            print(
-                "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
     def ampliar_habitacion_aleatoriamente(self, habitacion):
         relacion_ancho_alto = habitacion.ancho / habitacion.alto
@@ -367,7 +375,7 @@ class Mazmorra(object):
             print("Se crea el tesoro {0} en {1}".format(
                 tesoro, posicion_tesoro))
 
-    def anadir_habitacion(self, x, y, inicial=False):
+    def crear_habitacion(self, x, y, inicial=False):
         x_mapa = self.convertir_mazmorra_mapa(x)
         y_mapa = self.convertir_mazmorra_mapa(y)
 
@@ -379,8 +387,11 @@ class Mazmorra(object):
 
             return False
 
-        self.mazmorra[y][x] = i_casilla.habitacion if not inicial else i_casilla.inicial
         self.habitaciones[(x_mapa, y_mapa)] = habitacion
+
+        casilla = i_casilla.Casilla((x, y))
+        casilla.crear_habitacion(inicial)
+        self.mazmorra[y][x] = casilla
 
         if self.debug:
             print("[DEBUG] Se visita la habitacion ({0}, {1})".format(x, y))

@@ -17,7 +17,7 @@ class TemplateMazmorra(object):
         self.mapa = []
 
     def random_walk(self):
-        self.crear_mapa()
+        self.inicializar_mapa()
         x0, y0 = self.obtener_posicion_inicial()
 
         # Crear tuneles y habitaciones
@@ -33,7 +33,7 @@ class TemplateMazmorra(object):
 
         return self.mapa
 
-    def crear_mapa(self):
+    def inicializar_mapa(self):
         self.mapa.clear()
         for y in range(self.alto):
             self.mapa.append([0] * self.ancho)
@@ -124,7 +124,7 @@ class TemplateMazmorra(object):
     def crear_habitacion(self, x, y, direccion):
         if i_matriz_utils.se_saldria_de_la_matriz((x, y), direccion, self.ancho, self.alto):
             direccion = i_matriz_utils.calcular_nueva_direccion(
-                (x, y), direccion, ancho, alto)
+                (x, y), direccion, self.ancho, self.alto)
 
             if self.debug:
                 print("[DEBUG] Se crearia una habitacion fuera de los limites del mapa. Nueva direccion {0}".format(
@@ -133,7 +133,7 @@ class TemplateMazmorra(object):
         x += direccion[0]
         y += direccion[1]
         casilla = self.mapa[y][x]
-        if not casilla.es_tunel():
+        if casilla.esta_vacia():
             casilla.crear_habitacion()
 
             if self.debug:
@@ -141,7 +141,7 @@ class TemplateMazmorra(object):
                     "[DEBUG] Se ha creado una habitacion en ({0}, {1})".format(x, y))
         elif self.debug:
             print(
-                "[DEBUG] No se ha creado una habitacion porque hay un tunel en ({0}, {1})".format(x, y))
+                "[DEBUG] No se ha creado una habitacion ya existia algo en ({0}, {1})".format(x, y))
 
     def imprimir_mapa(self, esconder_vacias=True):
         for fila in self.mapa:
