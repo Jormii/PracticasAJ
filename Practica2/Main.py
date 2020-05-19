@@ -4,10 +4,11 @@ import sys
 import os
 import pathlib
 from decimal import Decimal
+import math
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
-ESCALA_SPRITES = 24
+ESCALA_SPRITES = 64
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
@@ -78,18 +79,19 @@ def generar_mazmorra():
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
     factor = 3
-    densidad_maxima = 0.2
+    densidad_maxima = 0.5
     generador = i_mazmorra.Mazmorra(
-        template, factor, densidad_maxima, lista_tesoros)
+        template, factor, densidad_maxima, lista_tesoros, debug)
     generador.generar_mazmorra()
+
+    if debug:
+        mazmorra.template.imprimir_mapa_detalle()
+        mazmorra.imprimir_mazmorra()
 
     return generador
 
 
 def pintar_mazmorra(mazmorra, sprites):
-    # mazmorra.template.imprimir_mapa_detalle()
-    # mazmorra.imprimir_mazmorra()
-
     template_mazmorra = mazmorra.template
 
     ancho = template_mazmorra.ancho * mazmorra.factor
@@ -139,7 +141,7 @@ def pintar_casilla_vacia(casilla, escala, sprites, screen):
     x = casilla.posicion[0]
     y = casilla.posicion[1]
 
-    rotacion = 90 * i_vegas.random_las_vegas(0, 4)
+    rotacion = -90 * i_vegas.random_las_vegas(0, 4)
     sprite = sprites["vacia"]
     sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
     sprite = pygame.transform.rotate(sprite, rotacion).convert()
@@ -149,7 +151,7 @@ def pintar_casilla_vacia(casilla, escala, sprites, screen):
 def pintar_casilla_una_conexion(casilla, escala, sprites, screen):
     x = casilla.posicion[0]
     y = casilla.posicion[1]
-    rotacion = 90 * casilla.orientacion()
+    rotacion = -90 * casilla.orientacion()
 
     sprite = sprites["uno"]
     sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
@@ -162,27 +164,25 @@ def pintar_casilla_dos_conexiones(casilla, mazmorra, escala, sprites, screen):
     y = casilla.posicion[1]
 
     orientacion = casilla.orientacion()
-    # Si orientacion no tiene decimales
+    # Si orientacion no tiene decimales => No esquina
     if Decimal(orientacion) % 1 == 0:
         sprite = sprites["dos_5"]
     else:
         orientacion = int(orientacion)
 
+        # TODO: Feo
+        if orientacion == 1 and i_casilla.direcciones[0] in casilla.conexiones:
+            orientacion = 3
+
         direccion = i_casilla.direcciones[orientacion]
         x_conexion = x + direccion[0]
         y_conexion = y + direccion[1]
         
-        if i_matriz_utils.pertenece_a_matriz((x_conexion, y_conexion), mazmorra.ancho, mazmorra.alto):
-            casilla_adyacente = mazmorra.mazmorra[y_conexion][x_conexion]
-            conexion_perpendicular = i_casilla.direcciones[(orientacion + 1) % 4]
-            sprite = sprites["dos_1"] if conexion_perpendicular in casilla_adyacente.conexiones else sprites["dos_4"]
-        else:
-            sprite = sprite["dos_1"]
+        casilla_adyacente = mazmorra.mazmorra[y_conexion][x_conexion]
+        conexion_perpendicular = i_casilla.direcciones[(orientacion + 1) % 4]
+        sprite = sprites["dos_1"] if conexion_perpendicular in casilla_adyacente.conexiones else sprites["dos_4"]
         
-        # TODO: Problema con paredes
-        
-
-    rotacion = 90 * orientacion
+    rotacion = -90 * orientacion
     sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
     sprite = pygame.transform.rotate(sprite, rotacion).convert()
 

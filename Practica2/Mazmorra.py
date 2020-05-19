@@ -47,7 +47,7 @@ class Mazmorra(object):
 
         for fila in self.mazmorra:
             for casilla in fila:
-                casilla.calcular_conexiones(self.mazmorra, self.alto, self.ancho)
+                casilla.calcular_conexiones(self.mazmorra, self.ancho, self.alto)
 
         return self.mazmorra
 
