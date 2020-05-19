@@ -3,6 +3,7 @@ import pygame
 import sys
 import os
 import pathlib
+from decimal import Decimal
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
@@ -12,6 +13,8 @@ i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
 i_casilla = importlib.import_module("Casilla")
 i_tesoro = importlib.import_module("Tesoro")
+i_vegas = importlib.import_module("LasVegas")
+i_matriz_utils = importlib.import_module("MatrizUtils")
 
 
 def main():
@@ -42,7 +45,9 @@ def inicializar_sprites():
     sprites = {}
     sprites["vacia"] = pygame.image.load("./tiles/14.png")
     sprites["uno"] = pygame.image.load("./tiles/6.png")
-    # sprites["dos"] = pygame.image.load("./tiles/dos_conexiones.png")
+    sprites["dos_1"] = pygame.image.load("./tiles/1.png")
+    sprites["dos_4"] = pygame.image.load("./tiles/4.png")
+    sprites["dos_5"] = pygame.image.load("./tiles/5.png")
     # sprites["tres"] = pygame.image.load("./tiles/tres_conexiones.png")
     # sprites["cuatro"] = pygame.image.load("./tiles/cuatro_conexiones.png")
 
@@ -114,11 +119,8 @@ def pintar_mazmorra(mazmorra, sprites):
             if n_conexiones == 1:
                 pintar_casilla_una_conexion(casilla, escala, sprites, screen)
             if n_conexiones == 2:
-                color = color_basico(casilla)
-                rectangulo = (x * escala, y * escala,
-                              escala, escala)
-                pygame.draw.rect(screen, color, rectangulo, 0)
-                # pintar_casilla_dos_conexiones(x, y, escala, sprites, screen)
+                pintar_casilla_dos_conexiones(
+                    casilla, mazmorra, escala, sprites, screen)
             if n_conexiones == 3:
                 color = color_basico(casilla)
                 rectangulo = (x * escala, y * escala,
@@ -136,8 +138,11 @@ def pintar_mazmorra(mazmorra, sprites):
 def pintar_casilla_vacia(casilla, escala, sprites, screen):
     x = casilla.posicion[0]
     y = casilla.posicion[1]
-    sprite = pygame.transform.scale(
-        sprites["vacia"], (escala, escala)).convert()
+
+    rotacion = 90 * i_vegas.random_las_vegas(0, 4)
+    sprite = sprites["vacia"]
+    sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
+    sprite = pygame.transform.rotate(sprite, rotacion).convert()
     screen.blit(sprite, (x * escala, y * escala))
 
 
@@ -146,14 +151,42 @@ def pintar_casilla_una_conexion(casilla, escala, sprites, screen):
     y = casilla.posicion[1]
     rotacion = 90 * casilla.orientacion()
 
-    sprite = pygame.transform.scale(
-        sprites["uno"], (escala, escala)).convert()
-    sprite = pygame.transform.rotate(sprites["uno"], rotacion).convert()
+    sprite = sprites["uno"]
+    sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
+    sprite = pygame.transform.rotate(sprite, rotacion).convert()
     screen.blit(sprite, (x * escala, y * escala))
 
 
-def pintar_casilla_dos_conexiones(x, y, escala, sprites, screen):
-    x = 0
+def pintar_casilla_dos_conexiones(casilla, mazmorra, escala, sprites, screen):
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
+
+    orientacion = casilla.orientacion()
+    # Si orientacion no tiene decimales
+    if Decimal(orientacion) % 1 == 0:
+        sprite = sprites["dos_5"]
+    else:
+        orientacion = int(orientacion)
+
+        direccion = i_casilla.direcciones[orientacion]
+        x_conexion = x + direccion[0]
+        y_conexion = y + direccion[1]
+        
+        if i_matriz_utils.pertenece_a_matriz((x_conexion, y_conexion), mazmorra.ancho, mazmorra.alto):
+            casilla_adyacente = mazmorra.mazmorra[y_conexion][x_conexion]
+            conexion_perpendicular = i_casilla.direcciones[(orientacion + 1) % 4]
+            sprite = sprites["dos_1"] if conexion_perpendicular in casilla_adyacente.conexiones else sprites["dos_4"]
+        else:
+            sprite = sprite["dos_1"]
+        
+        # TODO: Problema con paredes
+        
+
+    rotacion = 90 * orientacion
+    sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
+    sprite = pygame.transform.rotate(sprite, rotacion).convert()
+
+    screen.blit(sprite, (x * escala, y * escala))
 
 
 def pintar_casilla_tres_conexiones(x, y, escala, sprites, screen):
