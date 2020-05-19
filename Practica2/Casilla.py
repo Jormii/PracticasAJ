@@ -8,6 +8,13 @@ direcciones = {
     3: (-1, 0)     # Oeste
 }
 
+orientaciones = {
+    (0, -1): 0,
+    (-1, 0): 1,
+    (0, 1): 2,
+    (1, 0): 3    
+}
+
 
 class TiposCasilla(Enum):
     VACIA = 0
@@ -58,6 +65,14 @@ class Casilla(object):
             casilla = matriz[y][x]
             if casilla.tipo != TiposCasilla.VACIA:
                 self.conexiones.add(direccion)
+
+    def orientacion(self):
+        orientacion_media = 0
+        for conexion in self.conexiones:
+            orientacion = orientaciones[conexion]
+            orientacion_media += orientacion
+
+        return int(orientacion_media / len(self.conexiones))
 
     def esta_vacia(self):
         return self.tipo == TiposCasilla.VACIA

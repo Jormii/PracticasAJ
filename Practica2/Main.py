@@ -1,6 +1,8 @@
 import importlib
 import pygame
 import sys
+import os
+import pathlib
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
@@ -13,6 +15,9 @@ i_tesoro = importlib.import_module("Tesoro")
 
 
 def main():
+    path = pathlib.Path(__file__).parent.absolute().__str__()
+    os.chdir(path)
+
     pygame.init()
     pygame.display.set_caption("AJ - Practica 2")
     sprites = inicializar_sprites()
@@ -47,10 +52,10 @@ def inicializar_sprites():
 def generar_mazmorra():
     debug = False
 
-    ancho = 8
-    alto = 8
-    n_tuneles = 10
-    l_max_tunnel = 15
+    ancho = 2
+    alto = 2
+    n_tuneles = 1
+    l_max_tunnel = 1
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
@@ -68,7 +73,7 @@ def generar_mazmorra():
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
     factor = 3
-    densidad_maxima = 0.6
+    densidad_maxima = 0.2
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros)
     generador.generar_mazmorra()
@@ -97,14 +102,17 @@ def pintar_mazmorra(mazmorra, sprites):
     screen = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
     screen.fill((0, 0, 0))
 
-    for x in range(ancho):
-        for y in range(alto):
-            casilla = mazmorra.mazmorra[y][x]
+    for fila in mazmorra.mazmorra:
+        for casilla in fila:
+            # TODO: Quitar
+            x = casilla.posicion[0]
+            y = casilla.posicion[1]
+
             n_conexiones = len(casilla.conexiones)
             if n_conexiones == 0:
-                pintar_casilla_vacia(x, y, escala, sprites, screen)
+                pintar_casilla_vacia(casilla, escala, sprites, screen)
             if n_conexiones == 1:
-                pintar_casilla_una_conexion(x, y, casilla, escala, sprites, screen)
+                pintar_casilla_una_conexion(casilla, escala, sprites, screen)
             if n_conexiones == 2:
                 color = color_basico(casilla)
                 rectangulo = (x * escala, y * escala,
@@ -125,16 +133,19 @@ def pintar_mazmorra(mazmorra, sprites):
                 # pintar_casilla_cuatro_conexiones(x, y, escala, sprites, screen)
 
 
-def pintar_casilla_vacia(x, y, escala, sprites, screen):
+def pintar_casilla_vacia(casilla, escala, sprites, screen):
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
     sprite = pygame.transform.scale(
         sprites["vacia"], (escala, escala)).convert()
     screen.blit(sprite, (x * escala, y * escala))
 
 
-def pintar_casilla_una_conexion(x, y, casilla, escala, sprites, screen):
-    conexion = list(casilla.conexiones)[0]
-    rotacion = 0
-    
+def pintar_casilla_una_conexion(casilla, escala, sprites, screen):
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
+    rotacion = 90 * casilla.orientacion()
+
     sprite = pygame.transform.scale(
         sprites["uno"], (escala, escala)).convert()
     sprite = pygame.transform.rotate(sprites["uno"], rotacion).convert()
