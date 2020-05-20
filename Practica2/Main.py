@@ -8,7 +8,7 @@ import math
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
-ESCALA_SPRITES = 64
+ESCALA_SPRITES = 128
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
@@ -49,7 +49,9 @@ def inicializar_sprites():
     sprites["dos_1"] = pygame.image.load("./tiles/1.png")
     sprites["dos_4"] = pygame.image.load("./tiles/4.png")
     sprites["dos_5"] = pygame.image.load("./tiles/5.png")
-    # sprites["tres"] = pygame.image.load("./tiles/tres_conexiones.png")
+    sprites["tres_2"] = pygame.image.load("./tiles/2.png")
+    sprites["tres_8"] = pygame.image.load("./tiles/8.png")
+    sprites["tres_11"] = pygame.image.load("./tiles/11.png")
     # sprites["cuatro"] = pygame.image.load("./tiles/cuatro_conexiones.png")
 
     return sprites
@@ -58,10 +60,11 @@ def inicializar_sprites():
 def generar_mazmorra():
     debug = False
 
-    ancho = 2
-    alto = 2
-    n_tuneles = 1
-    l_max_tunnel = 1
+    ancho = i_vegas.random_las_vegas(5, 6 + 1)
+    alto = i_vegas.random_las_vegas(5, 6 + 1) + 1
+    n_tuneles = i_vegas.random_las_vegas(
+        max(ancho, alto), max(ancho, alto) + abs(ancho - alto))
+    l_max_tunnel = int(max(ancho, alto) * 2/3)
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
@@ -79,7 +82,7 @@ def generar_mazmorra():
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
     factor = 3
-    densidad_maxima = 0.5
+    densidad_maxima = 0.3
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros, debug)
     generador.generar_mazmorra()
@@ -124,11 +127,8 @@ def pintar_mazmorra(mazmorra, sprites):
                 pintar_casilla_dos_conexiones(
                     casilla, mazmorra, escala, sprites, screen)
             if n_conexiones == 3:
-                color = color_basico(casilla)
-                rectangulo = (x * escala, y * escala,
-                              escala, escala)
-                pygame.draw.rect(screen, color, rectangulo, 0)
-                # pintar_casilla_tres_conexiones(x, y, escala, sprites, screen)
+                pintar_casilla_tres_conexiones(
+                    casilla, mazmorra, escala, sprites, screen)
             if n_conexiones == 4:
                 color = color_basico(casilla)
                 rectangulo = (x * escala, y * escala,
@@ -138,25 +138,19 @@ def pintar_mazmorra(mazmorra, sprites):
 
 
 def pintar_casilla_vacia(casilla, escala, sprites, screen):
+    sprite = sprites["vacia"]
     x = casilla.posicion[0]
     y = casilla.posicion[1]
-
-    rotacion = -90 * i_vegas.random_las_vegas(0, 4)
-    sprite = sprites["vacia"]
-    sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
-    sprite = pygame.transform.rotate(sprite, rotacion).convert()
-    screen.blit(sprite, (x * escala, y * escala))
+    orientacion = i_vegas.random_las_vegas(0, 4)
+    dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
 
 def pintar_casilla_una_conexion(casilla, escala, sprites, screen):
+    sprite = sprites["uno"]
     x = casilla.posicion[0]
     y = casilla.posicion[1]
-    rotacion = -90 * casilla.orientacion()
-
-    sprite = sprites["uno"]
-    sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
-    sprite = pygame.transform.rotate(sprite, rotacion).convert()
-    screen.blit(sprite, (x * escala, y * escala))
+    orientacion = casilla.orientacion()
+    dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
 
 def pintar_casilla_dos_conexiones(casilla, mazmorra, escala, sprites, screen):
@@ -177,24 +171,61 @@ def pintar_casilla_dos_conexiones(casilla, mazmorra, escala, sprites, screen):
         direccion = i_casilla.direcciones[orientacion]
         x_conexion = x + direccion[0]
         y_conexion = y + direccion[1]
-        
+
         casilla_adyacente = mazmorra.mazmorra[y_conexion][x_conexion]
         conexion_perpendicular = i_casilla.direcciones[(orientacion + 1) % 4]
         sprite = sprites["dos_1"] if conexion_perpendicular in casilla_adyacente.conexiones else sprites["dos_4"]
-        
+
+    dibujar_sprite(sprite, x, y, orientacion, escala, screen)
+
+
+def pintar_casilla_tres_conexiones(casilla, mazmorra, escala, sprites, screen):
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
+
+    orientacion = int(casilla.orientacion())
+
+    # TODO: Muy feo
+    if orientacion == 1:
+        if i_casilla.direcciones[2] not in casilla.conexiones:
+            orientacion = 0
+        elif i_casilla.direcciones[1] not in casilla.conexiones:
+            orientacion = 3
+
+    direccion_orientacion = i_casilla.direcciones[orientacion]
+    x_adyacente = x + direccion_orientacion[0]
+    y_adyacente = y + direccion_orientacion[1]
+    casilla_adyacente = mazmorra.mazmorra[y_adyacente][x_adyacente]
+
+    direccion_perpendicular_izq = i_casilla.direcciones[(orientacion - 1) % 4]
+    direccion_perpendicular_der = i_casilla.direcciones[(orientacion + 1) % 4]
+
+    adyacente_conecta_izq = direccion_perpendicular_izq in casilla_adyacente.conexiones
+    adyacente_conecta_der = direccion_perpendicular_der in casilla_adyacente.conexiones
+
+    if not adyacente_conecta_izq and not adyacente_conecta_der:
+        sprite = sprites["tres_8"]
+    elif adyacente_conecta_izq and adyacente_conecta_der:
+        sprite = sprites["tres_2"]
+    else:
+        sprite = sprites["tres_11"]
+        flip_horizontal = bool(abs(direccion_orientacion[1])) and adyacente_conecta_izq
+        flip_vertical = bool(abs(direccion_orientacion[0])) and adyacente_conecta_izq
+        sprite = pygame.transform.flip(sprite, flip_horizontal, flip_vertical).convert()
+
+    dibujar_sprite(sprite, x, y, orientacion, escala, screen)
+
+
+def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen):
+    x = 0
+
+
+def dibujar_sprite(sprite, x, y, orientacion, escala, screen):
     rotacion = -90 * orientacion
     sprite = pygame.transform.scale(sprite, (escala, escala)).convert()
     sprite = pygame.transform.rotate(sprite, rotacion).convert()
 
     screen.blit(sprite, (x * escala, y * escala))
-
-
-def pintar_casilla_tres_conexiones(x, y, escala, sprites, screen):
-    x = 0
-
-
-def pintar_casilla_cuatro_conexiones(x, y, escala, sprites, screen):
-    x = 0
 
 
 def color_basico(casilla):
