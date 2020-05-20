@@ -44,15 +44,26 @@ def main():
 
 def inicializar_sprites():
     sprites = {}
+
     sprites["vacia"] = pygame.image.load("./tiles/14.png")
+
     sprites["uno"] = pygame.image.load("./tiles/6.png")
+
     sprites["dos_1"] = pygame.image.load("./tiles/1.png")
     sprites["dos_4"] = pygame.image.load("./tiles/4.png")
     sprites["dos_5"] = pygame.image.load("./tiles/5.png")
+
     sprites["tres_2"] = pygame.image.load("./tiles/2.png")
     sprites["tres_8"] = pygame.image.load("./tiles/8.png")
     sprites["tres_11"] = pygame.image.load("./tiles/11.png")
-    # sprites["cuatro"] = pygame.image.load("./tiles/cuatro_conexiones.png")
+    sprites["tres_11"] = pygame.image.load("./tiles/11.png")
+
+    sprites["cuatro_3"] = pygame.image.load("./tiles/3.png")
+    sprites["cuatro_7"] = pygame.image.load("./tiles/7.png")
+    sprites["cuatro_9"] = pygame.image.load("./tiles/9.png")
+    sprites["cuatro_10"] = pygame.image.load("./tiles/10.png")
+    sprites["cuatro_12"] = pygame.image.load("./tiles/12.png")
+    sprites["cuatro_13"] = pygame.image.load("./tiles/13.png")
 
     return sprites
 
@@ -60,10 +71,10 @@ def inicializar_sprites():
 def generar_mazmorra():
     debug = False
 
-    ancho = i_vegas.random_las_vegas(5, 6 + 1)
-    alto = i_vegas.random_las_vegas(5, 6 + 1) + 1
+    ancho = 8
+    alto = 8
     n_tuneles = i_vegas.random_las_vegas(
-        max(ancho, alto), max(ancho, alto) + abs(ancho - alto))
+        max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
     l_max_tunnel = int(max(ancho, alto) * 2/3)
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
@@ -81,7 +92,7 @@ def generar_mazmorra():
     )
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
-    factor = 3
+    factor = 2
     densidad_maxima = 0.3
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros, debug)
@@ -130,11 +141,8 @@ def pintar_mazmorra(mazmorra, sprites):
                 pintar_casilla_tres_conexiones(
                     casilla, mazmorra, escala, sprites, screen)
             if n_conexiones == 4:
-                color = color_basico(casilla)
-                rectangulo = (x * escala, y * escala,
-                              escala, escala)
-                pygame.draw.rect(screen, color, rectangulo, 0)
-                # pintar_casilla_cuatro_conexiones(x, y, escala, sprites, screen)
+                pintar_casilla_cuatro_conexiones(
+                    casilla, mazmorra, escala, sprites, screen)
 
 
 def pintar_casilla_vacia(casilla, escala, sprites, screen):
@@ -207,17 +215,49 @@ def pintar_casilla_tres_conexiones(casilla, mazmorra, escala, sprites, screen):
         sprite = sprites["tres_8"]
     elif adyacente_conecta_izq and adyacente_conecta_der:
         sprite = sprites["tres_2"]
+    elif not adyacente_conecta_izq and adyacente_conecta_der:
+        sprite = sprites["tres_11"]
     else:
         sprite = sprites["tres_11"]
-        flip_horizontal = bool(abs(direccion_orientacion[1])) and adyacente_conecta_izq
-        flip_vertical = bool(abs(direccion_orientacion[0])) and adyacente_conecta_izq
-        sprite = pygame.transform.flip(sprite, flip_horizontal, flip_vertical).convert()
+        flip_horizontal = True
+        flip_vertical = False
+        sprite = pygame.transform.flip(
+            sprite, flip_horizontal, flip_vertical).convert()
 
     dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
 
 def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen):
-    x = 0
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
+
+    conexiones_adyacentes = 0
+    for direccion in casilla.conexiones:
+        x_casilla_adyacente = x + direccion[0]
+        y_casilla_adyacente = y + direccion[1]
+        casilla_adyacente = mazmorra.mazmorra[y_casilla_adyacente][x_casilla_adyacente]
+
+        orientacion_direccion = i_casilla.orientaciones[direccion]
+        direccion_perpendicular = i_casilla.direcciones[(
+            orientacion_direccion + 1) % 4]
+
+        if direccion_perpendicular in casilla_adyacente.conexiones:
+            conexiones_adyacentes += 1
+
+    orientacion = 0  # TODO
+    if conexiones_adyacentes == 0:
+        sprite = sprites["cuatro_7"]
+    elif conexiones_adyacentes == 1:
+        sprite = sprites["cuatro_12"]
+    elif conexiones_adyacentes == 2:
+        sprite = sprites["cuatro_9"]
+        sprite = sprites["cuatro_13"]
+    elif conexiones_adyacentes == 3:
+        sprite = sprites["cuatro_9"]
+    elif conexiones_adyacentes == 4:
+        sprite = sprites["cuatro_3"]
+
+    dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
 
 def dibujar_sprite(sprite, x, y, orientacion, escala, screen):
@@ -226,21 +266,6 @@ def dibujar_sprite(sprite, x, y, orientacion, escala, screen):
     sprite = pygame.transform.rotate(sprite, rotacion).convert()
 
     screen.blit(sprite, (x * escala, y * escala))
-
-
-def color_basico(casilla):
-    if casilla.esta_vacia():
-        color = (0, 0, 0)
-    elif casilla.es_tunel():
-        color = (255 >> 1, 255 >> 1, 255 >> 1)
-    elif casilla.almacena_tesoro():
-        color = (0, 255, 0)
-    elif casilla.es_casilla_inicial:
-        color = (255, 0, 0)
-    elif casilla.es_habitacion():
-        color = (255, 255, 255)
-
-    return color
 
 
 if __name__ == "__main__":
