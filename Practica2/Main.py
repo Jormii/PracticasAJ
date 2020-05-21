@@ -8,7 +8,7 @@ import math
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
-ESCALA_SPRITES = 128
+ESCALA_SPRITES = 24
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
@@ -71,11 +71,11 @@ def inicializar_sprites():
 def generar_mazmorra():
     debug = False
 
-    ancho = 8
+    ancho = 15
     alto = 8
     n_tuneles = i_vegas.random_las_vegas(
         max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunnel = int(max(ancho, alto) * 2/3)
+    l_max_tunnel = max(ancho, alto)
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunnel, debug)
 
@@ -92,8 +92,8 @@ def generar_mazmorra():
     )
     lista_tesoros = [lote_tesoros_1, lote_tesoros_2]
 
-    factor = 2
-    densidad_maxima = 0.3
+    factor = 3
+    densidad_maxima = 0.45
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros, debug)
     generador.generar_mazmorra()
@@ -231,7 +231,7 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
     x = casilla.posicion[0]
     y = casilla.posicion[1]
 
-    conexiones_adyacentes = 0
+    conexiones_adyacentes = []
     for direccion in casilla.conexiones:
         x_casilla_adyacente = x + direccion[0]
         y_casilla_adyacente = y + direccion[1]
@@ -242,20 +242,49 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
             orientacion_direccion + 1) % 4]
 
         if direccion_perpendicular in casilla_adyacente.conexiones:
-            conexiones_adyacentes += 1
+            conexiones_adyacentes.append(direccion)
 
-    orientacion = 0  # TODO
-    if conexiones_adyacentes == 0:
+    orientacion = 0
+    n_conexiones_adyacentes = len(conexiones_adyacentes)
+    if n_conexiones_adyacentes == 0:
         sprite = sprites["cuatro_7"]
-    elif conexiones_adyacentes == 1:
+        orientacion = i_vegas.random_las_vegas(0, 4)
+    elif n_conexiones_adyacentes == 1:
         sprite = sprites["cuatro_12"]
-    elif conexiones_adyacentes == 2:
-        sprite = sprites["cuatro_9"]
-        sprite = sprites["cuatro_13"]
-    elif conexiones_adyacentes == 3:
-        sprite = sprites["cuatro_9"]
-    elif conexiones_adyacentes == 4:
+        orientacion = i_casilla.orientaciones[conexiones_adyacentes[0]]
+    elif n_conexiones_adyacentes == 2:
+        conexion_1 = conexiones_adyacentes[0]
+        conexion_2 = conexiones_adyacentes[1]
+
+        # Si son opuestos
+        if conexion_1[0] + conexion_2[0] == 0:
+            sprite = sprites["cuatro_13"]
+            orientacion = i_casilla.orientaciones[conexion_1]
+        else:
+            sprite = sprites["cuatro_9"]
+            
+            orientacion_1 = i_casilla.orientaciones[conexiones_adyacentes[0]]
+            orientacion_2 = i_casilla.orientaciones[conexiones_adyacentes[1]]
+            
+            # TODO: Muy feo
+            orientacion = max(orientacion_1, orientacion_2)
+            if orientacion == 3:
+                if orientacion_1 == 0:
+                    orientacion = 0
+            
+            
+    elif n_conexiones_adyacentes == 3:
+        sprite = sprites["cuatro_10"]
+
+        for direccion in i_casilla.direcciones.values():
+            if not direccion in conexiones_adyacentes:
+                adyacencia_no_existente = direccion
+                break
+
+        orientacion = i_casilla.orientaciones[adyacencia_no_existente]
+    elif n_conexiones_adyacentes == 4:
         sprite = sprites["cuatro_3"]
+        orientacion = i_vegas.random_las_vegas(0, 4)
 
     dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
