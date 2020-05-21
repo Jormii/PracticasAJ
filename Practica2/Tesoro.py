@@ -4,8 +4,9 @@ i_dfd = importlib.import_module("DiscreteFiniteDistribution")
 
 
 class Tesoro(object):
-    def __init__(self, nombre):
+    def __init__(self, nombre, clave_sprite):
         self.nombre = nombre
+        self.clave_sprite = clave_sprite
 
     def __repr__(self):
         return self.nombre
