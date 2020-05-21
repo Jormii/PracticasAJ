@@ -382,7 +382,7 @@ class Mazmorra(object):
     def crear_tesoro(self, habitacion):
         indice_aleatorio = i_vegas.random_las_vegas(0, len(self.lista_tesoros))
         tesoros = self.lista_tesoros[indice_aleatorio]
-        tesoro = tesoros.obtener_tesoro()
+        tesoro = tesoros.obtener_tesoro_aleatorio()
 
         posicion_tesoro = habitacion.posicion_aleatoria()
         x = posicion_tesoro[0]

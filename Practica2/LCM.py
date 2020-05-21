@@ -1,8 +1,10 @@
 import datetime
 import time
 
+# Generar una semilla distinta en cada ejecucion
 date = datetime.datetime.now()
 seed = int(time.mktime(date.timetuple()))
+
 c = {
     "M": 2 ** 10 - 3,
     "A": 35,
