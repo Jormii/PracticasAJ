@@ -18,6 +18,7 @@ ALTO_MONITOR = 768
 
 ESCALA_SPRITES = 24
 ESCALA_SPRITES_OBJETOS = 16
+PINTAR_SPRITES = True
 SPRITES_A_USAR = "agua"
 PREFIJOS_SPRITES = {
     "agua": "water_",
@@ -41,6 +42,11 @@ def main():
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    global PINTAR_SPRITES
+                    PINTAR_SPRITES = not PINTAR_SPRITES
+                    pintar_mazmorra(generador_de_mazmorra,
+                                    sprites, screen, escala)
                 if event.key == pygame.K_e:
                     system("clear")
                     generador_de_mazmorra.template.random_walk()
@@ -66,11 +72,11 @@ def inicializar_mazmorra():
 
 
 def inicializar_template_mazmorra(debug):
-    ancho = 8
-    alto = 8
+    ancho = 13
+    alto = 7
     n_tuneles = i_vegas.random_las_vegas(
         max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunel = int(max(ancho, alto) ** 2 * 1/3)
+    l_max_tunel = int(max(ancho, alto) * 2 * 1/3)
 
     return i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunel, debug)
@@ -99,7 +105,7 @@ def inicializar_objetos():
 
 def inicializar_generador(template, lista_objetos, debug):
     factor = 3
-    densidad_maxima = 0.35
+    densidad_maxima = 0.4
     return i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_objetos, debug)
 
@@ -191,6 +197,22 @@ def pintar_mazmorra(generador_de_mazmorra, sprites, screen, escala):
 
 
 def pintar_casilla(casilla, mazmorra, escala, sprites, screen):
+    if not PINTAR_SPRITES:
+        if casilla.esta_vacia():
+            color = (0, 0, 0)
+        elif casilla.es_tunel():
+            color = (122, 122, 122)
+        elif casilla.es_casilla_inicial:
+            color = (255, 0, 0)
+        elif casilla.es_habitacion():
+            color = (255, 255, 255)
+
+        x = casilla.posicion[0]
+        y = casilla.posicion[1]
+        pygame.draw.rect(screen, color, (escala * x,
+                                         escala * y, escala, escala))
+        return
+
     # Nota: Las siguientes funciones son bastante feas y caoticas
     n_conexiones = len(casilla.conexiones)
     if n_conexiones == 0:
@@ -352,6 +374,14 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
 
 
 def pintar_tesoro(casilla, escala, sprites, screen):
+    if not PINTAR_SPRITES:
+        x = casilla.posicion[0]
+        y = casilla.posicion[1]
+        color = (0, 255, 00)
+        pygame.draw.rect(screen, color, (escala * x,
+                                         escala * y, escala, escala))
+        return
+
     tesoro = casilla.tesoro
 
     sprite = sprites[tesoro.clave_sprite]

@@ -123,7 +123,11 @@ class Mazmorra(object):
                 "[DEBUG] Ya se ha visitado la casilla ({0}, {1})".format(x, y))
 
     def expandir_mazmorra(self):
-        # Se da prioriedad a hacer las habitaciones mas grandes
+        # Se expanden las habitaciones en primer lugar
+        for habitacion in self.habitaciones.values():
+            self.ampliar_habitacion_aleatoriamente(habitacion)
+
+        # Se da prioridad a hacer las habitaciones mas grandes
         frecuencia_creacion_camino = int(1 / self.densidad_maxima)
         iteraciones_sin_crear_camino = 0
 
