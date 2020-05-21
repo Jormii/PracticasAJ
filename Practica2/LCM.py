@@ -1,7 +1,7 @@
-import datetime
 import time
+import datetime
 
-# Generar una semilla distinta en cada ejecucion
+# Generar una semilla de acuerdo a la fecha
 date = datetime.datetime.now()
 seed = int(time.mktime(date.timetuple()))
 

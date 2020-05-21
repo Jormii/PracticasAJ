@@ -1,11 +1,8 @@
 import importlib
 
-i_template = importlib.import_module("TemplateMazmorra")
 i_casilla = importlib.import_module("Casilla")
 i_habitacion = importlib.import_module("Habitacion")
-i_lcm = importlib.import_module("LCM")
 i_vegas = importlib.import_module("LasVegas")
-i_dfd = importlib.import_module("DiscreteFiniteDistribution")
 i_matriz_utils = importlib.import_module("MatrizUtils")
 
 

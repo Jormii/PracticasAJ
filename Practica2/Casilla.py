@@ -1,6 +1,8 @@
 from enum import Enum
 import importlib
 
+i_matriz_utils = importlib.import_module("MatrizUtils")
+
 # Direcciones utilizadas para indicar conexiones entre casillas
 direcciones = {
     0: (0, -1),    # Norte
@@ -23,10 +25,6 @@ class TiposCasilla(Enum):
     TUNEL = 1
     HABITACION = 2
     TESORO = 3  # Una casilla con tesoro es una habitacion
-
-
-i_template = importlib.import_module("TemplateMazmorra")
-i_matriz_utils = importlib.import_module("MatrizUtils")
 
 
 class Casilla(object):

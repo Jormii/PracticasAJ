@@ -1,10 +1,15 @@
+import os
+import sys
+import pathlib
 import importlib
 import pygame
-import sys
-import os
-import pathlib
 from decimal import Decimal
-import math
+
+i_template = importlib.import_module("TemplateMazmorra")
+i_mazmorra = importlib.import_module("Mazmorra")
+i_casilla = importlib.import_module("Casilla")
+i_tesoro = importlib.import_module("Tesoro")
+i_vegas = importlib.import_module("LasVegas")
 
 ANCHO_MONITOR = 1360
 ALTO_MONITOR = 768
@@ -17,13 +22,6 @@ PREFIJOS_SPRITES = {
 }
 
 SPRITES_A_USAR = "agua"
-
-i_template = importlib.import_module("TemplateMazmorra")
-i_mazmorra = importlib.import_module("Mazmorra")
-i_casilla = importlib.import_module("Casilla")
-i_tesoro = importlib.import_module("Tesoro")
-i_vegas = importlib.import_module("LasVegas")
-i_matriz_utils = importlib.import_module("MatrizUtils")
 
 
 def main():
