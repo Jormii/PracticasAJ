@@ -46,6 +46,11 @@ def main():
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    mazmorra.template.random_walk()
+                    mazmorra.generar_mazmorra()
+                    pintar_mazmorra(mazmorra, sprites, screen, escala)
+                    pygame.display.flip()
                 if event.key == pygame.K_w:
                     mazmorra.generar_mazmorra()
                     pintar_mazmorra(mazmorra, sprites, screen, escala)
@@ -127,11 +132,18 @@ def inicializar_screen(mazmorra):
 def generar_mazmorra():
     debug = False
 
-    ancho = 15
-    alto = 8
-    n_tuneles = i_vegas.random_las_vegas(
-        max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunel = max(ancho, alto)
+    if debug:
+        ancho = 2
+        alto = 2
+        n_tuneles = 1
+        l_max_tunel = 1
+    else:
+        ancho = 15
+        alto = 8
+        n_tuneles = i_vegas.random_las_vegas(
+            max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
+        l_max_tunel = max(ancho, alto)
+
     template = i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunel, debug)
 
@@ -151,9 +163,9 @@ def generar_mazmorra():
     lista_tesoros = [objetos, tesoros]
 
     factor = 3
-    densidad_maxima = 0.3
+    densidad_maxima = 0.4
     generador = i_mazmorra.Mazmorra(
-        template, factor, densidad_maxima, lista_tesoros, debug)
+        template, factor, densidad_maxima, lista_tesoros, False)
     generador.generar_mazmorra()
 
     if debug:

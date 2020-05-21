@@ -89,7 +89,6 @@ class TemplateMazmorra(object):
                 return x, y, direccion, True
             else:
                 casilla.crear_tunel()
-                paso += 1
 
                 if self.debug:
                     print(
