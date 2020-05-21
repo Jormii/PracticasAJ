@@ -72,11 +72,11 @@ def inicializar_mazmorra():
 
 
 def inicializar_template_mazmorra(debug):
-    ancho = 13
+    ancho = 11
     alto = 7
     n_tuneles = i_vegas.random_las_vegas(
         max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunel = int(max(ancho, alto) * 2 * 1/3)
+    l_max_tunel = int(max(ancho, alto) * 2 * 2/3)
 
     return i_template.TemplateMazmorra(
         ancho, alto, n_tuneles, l_max_tunel, debug)
