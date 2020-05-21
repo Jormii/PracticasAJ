@@ -1,8 +1,10 @@
-import datetime
 import time
+import datetime
 
+# Generar una semilla de acuerdo a la fecha
 date = datetime.datetime.now()
 seed = int(time.mktime(date.timetuple()))
+
 c = {
     "M": 2 ** 10 - 3,
     "A": 35,

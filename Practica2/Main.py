@@ -1,105 +1,108 @@
+import os
+import sys
+import pathlib
 import importlib
 import pygame
-import sys
-import os
-import pathlib
+
+from os import system
 from decimal import Decimal
-import math
-
-ANCHO_MONITOR = 1360
-ALTO_MONITOR = 768
-ESCALA_SPRITES = 24
-ESCALA_SPRITES_OBJETOS = 16
-
-PREFIJOS_SPRITES = {
-    "tunel": "water_",
-    "inicial": "initial_"
-}
 
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
 i_casilla = importlib.import_module("Casilla")
 i_tesoro = importlib.import_module("Tesoro")
 i_vegas = importlib.import_module("LasVegas")
-i_matriz_utils = importlib.import_module("MatrizUtils")
+
+ANCHO_MONITOR = 1360
+ALTO_MONITOR = 768
+
+ESCALA_SPRITES = 24
+ESCALA_SPRITES_OBJETOS = 16
+SPRITES_A_USAR = "agua"
+PREFIJOS_SPRITES = {
+    "agua": "water_",
+    "gemas": "initial_"
+}
 
 
 def main():
+    # Cambiar el path para hacer el directorio que contiene Main.py el cwd
     path = pathlib.Path(__file__).parent.absolute().__str__()
     os.chdir(path)
 
-    pygame.init()
-    pygame.display.set_caption("AJ - Practica 2")
+    generador_de_mazmorra = inicializar_mazmorra()
+    screen, escala = inicializar_screen(generador_de_mazmorra)
 
-    mazmorra = generar_mazmorra()
-    screen, escala = inicializar_screen(mazmorra)
-    
     sprites = inicializar_sprites()
-    pintar_mazmorra(mazmorra, sprites, screen, escala)
-
-    pygame.display.flip()
+    pintar_mazmorra(generador_de_mazmorra, sprites, screen, escala)
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    system("clear")
+                    generador_de_mazmorra.template.random_walk()
+                    generador_de_mazmorra.generar_mazmorra()
+                    pintar_mazmorra(generador_de_mazmorra,
+                                    sprites, screen, escala)
                 if event.key == pygame.K_w:
-                    mazmorra.generar_mazmorra()
-                    pintar_mazmorra(mazmorra, sprites, screen, escala)
-                    pygame.display.flip()
+                    system("clear")
+                    generador_de_mazmorra.generar_mazmorra()
+                    pintar_mazmorra(generador_de_mazmorra,
+                                    sprites, screen, escala)
 
 
-def inicializar_sprites():
-    sprites = {}
-    for k, prefijo in PREFIJOS_SPRITES.items():
-        sprites_prefijo = {}
-        sprites[k] = sprites_prefijo
+def inicializar_mazmorra():
+    debug = False
 
-        sprites_prefijo["vacia"] = pygame.image.load(
-            "./tiles/{0}empty.png".format(prefijo))
+    template = inicializar_template_mazmorra(debug)
+    lista_objetos = inicializar_objetos()
+    generador = inicializar_generador(template, lista_objetos, debug)
+    generador.generar_mazmorra()
 
-        sprites_prefijo["uno"] = pygame.image.load(
-            "./tiles/{0}6.png".format(prefijo))
+    return generador
 
-        sprites_prefijo["dos_1"] = pygame.image.load(
-            "./tiles/{0}1.png".format(prefijo))
-        sprites_prefijo["dos_4"] = pygame.image.load(
-            "./tiles/{0}4.png".format(prefijo))
-        sprites_prefijo["dos_5"] = pygame.image.load(
-            "./tiles/{0}5.png".format(prefijo))
 
-        sprites_prefijo["tres_2"] = pygame.image.load(
-            "./tiles/{0}2.png".format(prefijo))
-        sprites_prefijo["tres_8"] = pygame.image.load(
-            "./tiles/{0}8.png".format(prefijo))
-        sprites_prefijo["tres_11"] = pygame.image.load(
-            "./tiles/{0}11.png".format(prefijo))
-        sprites_prefijo["tres_11"] = pygame.image.load(
-            "./tiles/{0}11.png".format(prefijo))
+def inicializar_template_mazmorra(debug):
+    ancho = 8
+    alto = 8
+    n_tuneles = i_vegas.random_las_vegas(
+        max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
+    l_max_tunel = int(max(ancho, alto) ** 2 * 1/3)
 
-        sprites_prefijo["cuatro_3"] = pygame.image.load(
-            "./tiles/{0}3.png".format(prefijo))
-        sprites_prefijo["cuatro_7"] = pygame.image.load(
-            "./tiles/{0}7.png".format(prefijo))
-        sprites_prefijo["cuatro_9"] = pygame.image.load(
-            "./tiles/{0}9.png".format(prefijo))
-        sprites_prefijo["cuatro_10"] = pygame.image.load(
-            "./tiles/{0}10.png".format(prefijo))
-        sprites_prefijo["cuatro_12"] = pygame.image.load(
-            "./tiles/{0}12.png".format(prefijo))
-        sprites_prefijo["cuatro_13"] = pygame.image.load(
-            "./tiles/{0}13.png".format(prefijo))
+    return i_template.TemplateMazmorra(
+        ancho, alto, n_tuneles, l_max_tunel, debug)
 
-    sprites["baya"] = pygame.image.load("./items/baya.png")
-    sprites["dinero"] = pygame.image.load("./items/dinero.png")
-    sprites["llave"] = pygame.image.load("./items/llave.png")
-    sprites["manzana"] = pygame.image.load("./items/manzana.png")
-    sprites["pocion"] = pygame.image.load("./items/pocion.png")
-    sprites["semilla"] = pygame.image.load("./items/semilla.png")
-    sprites["tesoro"] = pygame.image.load("./items/tesoro.png")
 
-    return sprites
+def inicializar_objetos():
+    # Lista con tuplas probabilidad-objeto
+    # La clase Tesoros se encarga de normalizar estas probabilidades
+    objetos = i_tesoro.Tesoros(
+        [(70, i_tesoro.Tesoro("Baya", "baya")),
+         (20, i_tesoro.Tesoro("Llave", "llave")),
+         (8, i_tesoro.Tesoro("Manzana", "manzana")),
+         (2, i_tesoro.Tesoro("Semilla", "semilla"))
+         ]
+    )
+
+    tesoros = i_tesoro.Tesoros(
+        [(82, i_tesoro.Tesoro("Dinero", "dinero")),
+         (10, i_tesoro.Tesoro("Pocion", "pocion")),
+         (8, i_tesoro.Tesoro("Tesoro", "tesoro"))
+         ]
+    )
+
+    return [objetos, tesoros]
+
+
+def inicializar_generador(template, lista_objetos, debug):
+    factor = 3
+    densidad_maxima = 0.35
+    return i_mazmorra.Mazmorra(
+        template, factor, densidad_maxima, lista_objetos, debug)
+
 
 def inicializar_screen(mazmorra):
     template_mazmorra = mazmorra.template
@@ -116,84 +119,95 @@ def inicializar_screen(mazmorra):
         alto_pantalla = alto_pantalla >> 1
         escala = escala >> 1
 
+    pygame.init()
+    pygame.display.set_caption("AJ - Practica 2 - Jorge López Natal")
     screen = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
     screen.fill((0, 0, 0))
-    
+
     return screen, escala
 
-def generar_mazmorra():
-    debug = False
 
-    ancho = 15
-    alto = 8
-    n_tuneles = i_vegas.random_las_vegas(
-        max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunnel = max(ancho, alto)
-    template = i_template.TemplateMazmorra(
-        ancho, alto, n_tuneles, l_max_tunnel, debug)
+def inicializar_sprites():
+    prefijo = PREFIJOS_SPRITES[SPRITES_A_USAR]
 
-    objetos = i_tesoro.Tesoros(
-        [(1, i_tesoro.Tesoro("Baya", "baya")),
-         (1, i_tesoro.Tesoro("Llave", "llave")),
-         (1, i_tesoro.Tesoro("Manzana", "manzana")),
-         (1, i_tesoro.Tesoro("Semilla", "semilla"))
-         ]
-    )
-    tesoros = i_tesoro.Tesoros(
-        [(1, i_tesoro.Tesoro("Dinero", "dinero")),
-         (1, i_tesoro.Tesoro("Pocion", "pocion")),
-         (2, i_tesoro.Tesoro("Tesoro", "tesoro"))
-         ]
-    )
-    lista_tesoros = [objetos, tesoros]
+    sprites = {}
 
-    factor = 3
-    densidad_maxima = 0.5
-    generador = i_mazmorra.Mazmorra(
-        template, factor, densidad_maxima, lista_tesoros, debug)
-    generador.generar_mazmorra()
+    sprites["vacia"] = pygame.image.load(
+        "./tiles/{0}empty.png".format(prefijo))
 
-    if debug:
-        mazmorra.template.imprimir_mapa_detalle()
-        mazmorra.imprimir_mazmorra()
+    sprites["uno"] = pygame.image.load(
+        "./tiles/{0}6.png".format(prefijo))
 
-    return generador
+    sprites["dos_1"] = pygame.image.load(
+        "./tiles/{0}1.png".format(prefijo))
+    sprites["dos_4"] = pygame.image.load(
+        "./tiles/{0}4.png".format(prefijo))
+    sprites["dos_5"] = pygame.image.load(
+        "./tiles/{0}5.png".format(prefijo))
+
+    sprites["tres_2"] = pygame.image.load(
+        "./tiles/{0}2.png".format(prefijo))
+    sprites["tres_8"] = pygame.image.load(
+        "./tiles/{0}8.png".format(prefijo))
+    sprites["tres_11"] = pygame.image.load(
+        "./tiles/{0}11.png".format(prefijo))
+    sprites["tres_11"] = pygame.image.load(
+        "./tiles/{0}11.png".format(prefijo))
+
+    sprites["cuatro_3"] = pygame.image.load(
+        "./tiles/{0}3.png".format(prefijo))
+    sprites["cuatro_7"] = pygame.image.load(
+        "./tiles/{0}7.png".format(prefijo))
+    sprites["cuatro_9"] = pygame.image.load(
+        "./tiles/{0}9.png".format(prefijo))
+    sprites["cuatro_10"] = pygame.image.load(
+        "./tiles/{0}10.png".format(prefijo))
+    sprites["cuatro_12"] = pygame.image.load(
+        "./tiles/{0}12.png".format(prefijo))
+    sprites["cuatro_13"] = pygame.image.load(
+        "./tiles/{0}13.png".format(prefijo))
+
+    sprites["baya"] = pygame.image.load("./items/baya.png")
+    sprites["dinero"] = pygame.image.load("./items/dinero.png")
+    sprites["llave"] = pygame.image.load("./items/llave.png")
+    sprites["manzana"] = pygame.image.load("./items/manzana.png")
+    sprites["pocion"] = pygame.image.load("./items/pocion.png")
+    sprites["semilla"] = pygame.image.load("./items/semilla.png")
+    sprites["tesoro"] = pygame.image.load("./items/tesoro.png")
+
+    return sprites
 
 
-def pintar_mazmorra(mazmorra, sprites, screen, escala):
-    indice_aleatorio = i_vegas.random_las_vegas(0, len(PREFIJOS_SPRITES))
-    tileset = list(PREFIJOS_SPRITES.keys())[indice_aleatorio]
-    subconjunto_sprites = sprites[tileset]
-    for fila in mazmorra.mazmorra:
+def pintar_mazmorra(generador_de_mazmorra, sprites, screen, escala):
+    mazmorra = generador_de_mazmorra.mazmorra
+    for fila in mazmorra:
         for casilla in fila:
-            n_conexiones = len(casilla.conexiones)
-            if n_conexiones == 0:
-                pintar_casilla_vacia(
-                    casilla, escala, subconjunto_sprites, screen)
-            if n_conexiones == 1:
-                pintar_casilla_una_conexion(
-                    casilla, escala, subconjunto_sprites, screen)
-            if n_conexiones == 2:
-                pintar_casilla_dos_conexiones(
-                    casilla, mazmorra, escala, subconjunto_sprites, screen)
-            if n_conexiones == 3:
-                pintar_casilla_tres_conexiones(
-                    casilla, mazmorra, escala, subconjunto_sprites, screen)
-            if n_conexiones == 4:
-                pintar_casilla_cuatro_conexiones(
-                    casilla, mazmorra, escala, subconjunto_sprites, screen)
+            pintar_casilla(casilla, mazmorra, escala, sprites, screen)
 
             if casilla.almacena_tesoro():
-                tesoro = casilla.tesoro
-                
-                sprite = sprites[tesoro.clave_sprite]
-                x = casilla.posicion[0]
-                y = casilla.posicion[1]
-                orientacion = 0
-                
-                escala_tesoro = int(escala * ESCALA_SPRITES_OBJETOS / ESCALA_SPRITES)
-                sprite = pygame.transform.scale(sprite, (escala_tesoro, escala_tesoro))
-                dibujar_sprite(sprite, x, y, orientacion, escala, screen, escalar=False)
+                pintar_tesoro(casilla, escala, sprites, screen)
+
+    pygame.display.flip()
+
+
+def pintar_casilla(casilla, mazmorra, escala, sprites, screen):
+    # Nota: Las siguientes funciones son bastante feas y caoticas
+    n_conexiones = len(casilla.conexiones)
+    if n_conexiones == 0:
+        pintar_casilla_vacia(
+            casilla, escala, sprites, screen)
+    if n_conexiones == 1:
+        pintar_casilla_una_conexion(
+            casilla, escala, sprites, screen)
+    if n_conexiones == 2:
+        pintar_casilla_dos_conexiones(
+            casilla, mazmorra, escala, sprites, screen)
+    if n_conexiones == 3:
+        pintar_casilla_tres_conexiones(
+            casilla, mazmorra, escala, sprites, screen)
+    if n_conexiones == 4:
+        pintar_casilla_cuatro_conexiones(
+            casilla, mazmorra, escala, sprites, screen)
 
 
 def pintar_casilla_vacia(casilla, escala, sprites, screen):
@@ -231,7 +245,7 @@ def pintar_casilla_dos_conexiones(casilla, mazmorra, escala, sprites, screen):
         x_conexion = x + direccion[0]
         y_conexion = y + direccion[1]
 
-        casilla_adyacente = mazmorra.mazmorra[y_conexion][x_conexion]
+        casilla_adyacente = mazmorra[y_conexion][x_conexion]
         conexion_perpendicular = i_casilla.direcciones[(orientacion + 1) % 4]
         sprite = sprites["dos_1"] if conexion_perpendicular in casilla_adyacente.conexiones else sprites["dos_4"]
 
@@ -254,7 +268,7 @@ def pintar_casilla_tres_conexiones(casilla, mazmorra, escala, sprites, screen):
     direccion_orientacion = i_casilla.direcciones[orientacion]
     x_adyacente = x + direccion_orientacion[0]
     y_adyacente = y + direccion_orientacion[1]
-    casilla_adyacente = mazmorra.mazmorra[y_adyacente][x_adyacente]
+    casilla_adyacente = mazmorra[y_adyacente][x_adyacente]
 
     direccion_perpendicular_izq = i_casilla.direcciones[(orientacion - 1) % 4]
     direccion_perpendicular_der = i_casilla.direcciones[(orientacion + 1) % 4]
@@ -286,7 +300,7 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
     for direccion in casilla.conexiones:
         x_casilla_adyacente = x + direccion[0]
         y_casilla_adyacente = y + direccion[1]
-        casilla_adyacente = mazmorra.mazmorra[y_casilla_adyacente][x_casilla_adyacente]
+        casilla_adyacente = mazmorra[y_casilla_adyacente][x_casilla_adyacente]
 
         orientacion_direccion = i_casilla.orientaciones[direccion]
         direccion_perpendicular = i_casilla.direcciones[(
@@ -299,7 +313,6 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
     n_conexiones_adyacentes = len(conexiones_adyacentes)
     if n_conexiones_adyacentes == 0:
         sprite = sprites["cuatro_7"]
-        orientacion = i_vegas.random_las_vegas(0, 4)
     elif n_conexiones_adyacentes == 1:
         sprite = sprites["cuatro_12"]
         orientacion = i_casilla.orientaciones[conexiones_adyacentes[0]]
@@ -334,14 +347,29 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
         orientacion = i_casilla.orientaciones[adyacencia_no_existente]
     elif n_conexiones_adyacentes == 4:
         sprite = sprites["cuatro_3"]
-        orientacion = i_vegas.random_las_vegas(0, 4)
 
     dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
 
+def pintar_tesoro(casilla, escala, sprites, screen):
+    tesoro = casilla.tesoro
+
+    sprite = sprites[tesoro.clave_sprite]
+    x = casilla.posicion[0]
+    y = casilla.posicion[1]
+    orientacion = 0
+
+    escala_tesoro = int(
+        escala * ESCALA_SPRITES_OBJETOS / ESCALA_SPRITES)
+    sprite = pygame.transform.scale(
+        sprite, (escala_tesoro, escala_tesoro))
+    dibujar_sprite(sprite, x, y, orientacion,
+                   escala, screen, escalar=False)
+
+
 def dibujar_sprite(sprite, x, y, orientacion, escala, screen, escalar=True):
     rotacion = -90 * orientacion
-    
+
     if escalar:
         sprite = pygame.transform.scale(sprite, (escala, escala))
     sprite = pygame.transform.rotate(sprite, rotacion)

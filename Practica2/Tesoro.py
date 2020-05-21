@@ -13,6 +13,7 @@ class Tesoro(object):
 
 
 class Tesoros(object):
+    # Tesoros "normaliza" los pesos proporcionados
     def __init__(self, tuplas_peso_tesoro):
         self.tesoros = []
         self.pesos = []
@@ -28,7 +29,7 @@ class Tesoros(object):
             self.pesos.append(peso)
             self.tesoros.append(tesoro)
 
-    def obtener_tesoro(self):
+    def obtener_tesoro_aleatorio(self):
         indice = i_dfd.random_from_weights(self.pesos)
         return self.tesoros[indice]
 

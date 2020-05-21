@@ -11,6 +11,7 @@ class Habitacion(object):
         self.alto = 1
         self.es_habitacion_inicial = es_habitacion_inicial
 
+    # Devuelve una posicion aleatoria dentro de la habitacion
     def posicion_aleatoria(self):
         x = i_vegas.random_las_vegas(
             self.posicion[0], self.posicion[0] + self.ancho)
@@ -18,6 +19,7 @@ class Habitacion(object):
             self.posicion[1], self.posicion[1] + self.alto)
         return (x, y)
 
+    # Indica si la posicion argumento pertenece a la habitacion
     def casilla_en_habitacion(self, x, y):
         ancho_fin = self.posicion[0] + self.ancho
         alto_fin = self.posicion[1] + self.alto
