@@ -192,9 +192,6 @@ class Mazmorra(object):
             habitacion.alto)
 
         for iteracion in range(iteraciones):
-            if x < 0 or y < 0:
-                z = 0
-
             casilla = self.mazmorra[y][x]
             if casilla.esta_vacia():
                 self.celdas_ocupadas += 1
@@ -420,7 +417,7 @@ class Mazmorra(object):
             # Aleatoriamente, decidir si aloja tesoro
             relacion = celdas / media * 100
             aleatorio = i_vegas.random_las_vegas(0, 100)
-            if aleatorio < relacion - 100:
+            if aleatorio < (relacion - 100):
                 self.crear_tesoro(habitacion)
 
     def crear_tesoro(self, habitacion):
@@ -437,7 +434,7 @@ class Mazmorra(object):
         casilla.crear_tesoro(tesoro)
 
         if self.debug:
-            print("Se crea el tesoro {0} en {1}".format(
+            print("[DEBUG] Se crea el tesoro {0} en {1}".format(
                 tesoro, posicion_tesoro))
 
     def crear_habitacion(self, x, y, inicial=False):

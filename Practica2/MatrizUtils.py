@@ -26,13 +26,13 @@ def calcular_nueva_direccion(posicion, direccion, ancho, alto):
     if direccion[0] == 0:
         # %x € {0, 1}, si extremo izquierdo/derecho
         porcentaje_en_x = x / (ancho - 1) * 100
-        girar_derecha = i_vegas.random_las_vegas(0, 100) > porcentaje_en_x
+        girar_derecha = i_vegas.random_las_vegas(1, 100 + 1) > porcentaje_en_x
         nueva_direccion = direcciones[1] if girar_derecha else direcciones[3]
     # Se mueve hacia el oeste o este
     else:
         # %y € {0, 1}, si extremo superior/inferior
         porcentaje_en_y = y / (alto - 1) * 100
-        girar_abajo = i_vegas.random_las_vegas(0, 100) > porcentaje_en_y
+        girar_abajo = i_vegas.random_las_vegas(1, 100 + 1) > porcentaje_en_y
         nueva_direccion = direcciones[2] if girar_abajo else direcciones[0]
 
     return nueva_direccion
