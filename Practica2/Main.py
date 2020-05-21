@@ -16,6 +16,8 @@ PREFIJOS_SPRITES = {
     "inicial": "initial_"
 }
 
+SPRITES_A_USAR = "tunel"
+
 i_template = importlib.import_module("TemplateMazmorra")
 i_mazmorra = importlib.import_module("Mazmorra")
 i_casilla = importlib.import_module("Casilla")
@@ -33,7 +35,7 @@ def main():
 
     mazmorra = generar_mazmorra()
     screen, escala = inicializar_screen(mazmorra)
-    
+
     sprites = inicializar_sprites()
     pintar_mazmorra(mazmorra, sprites, screen, escala)
 
@@ -101,6 +103,7 @@ def inicializar_sprites():
 
     return sprites
 
+
 def inicializar_screen(mazmorra):
     template_mazmorra = mazmorra.template
 
@@ -118,8 +121,9 @@ def inicializar_screen(mazmorra):
 
     screen = pygame.display.set_mode((ancho_pantalla, alto_pantalla))
     screen.fill((0, 0, 0))
-    
+
     return screen, escala
+
 
 def generar_mazmorra():
     debug = False
@@ -148,7 +152,7 @@ def generar_mazmorra():
     lista_tesoros = [objetos, tesoros]
 
     factor = 3
-    densidad_maxima = 0.5
+    densidad_maxima = 0.3
     generador = i_mazmorra.Mazmorra(
         template, factor, densidad_maxima, lista_tesoros, debug)
     generador.generar_mazmorra()
@@ -161,9 +165,7 @@ def generar_mazmorra():
 
 
 def pintar_mazmorra(mazmorra, sprites, screen, escala):
-    indice_aleatorio = i_vegas.random_las_vegas(0, len(PREFIJOS_SPRITES))
-    tileset = list(PREFIJOS_SPRITES.keys())[indice_aleatorio]
-    subconjunto_sprites = sprites[tileset]
+    subconjunto_sprites = sprites[SPRITES_A_USAR]
     for fila in mazmorra.mazmorra:
         for casilla in fila:
             n_conexiones = len(casilla.conexiones)
@@ -185,15 +187,18 @@ def pintar_mazmorra(mazmorra, sprites, screen, escala):
 
             if casilla.almacena_tesoro():
                 tesoro = casilla.tesoro
-                
+
                 sprite = sprites[tesoro.clave_sprite]
                 x = casilla.posicion[0]
                 y = casilla.posicion[1]
                 orientacion = 0
-                
-                escala_tesoro = int(escala * ESCALA_SPRITES_OBJETOS / ESCALA_SPRITES)
-                sprite = pygame.transform.scale(sprite, (escala_tesoro, escala_tesoro))
-                dibujar_sprite(sprite, x, y, orientacion, escala, screen, escalar=False)
+
+                escala_tesoro = int(
+                    escala * ESCALA_SPRITES_OBJETOS / ESCALA_SPRITES)
+                sprite = pygame.transform.scale(
+                    sprite, (escala_tesoro, escala_tesoro))
+                dibujar_sprite(sprite, x, y, orientacion,
+                               escala, screen, escalar=False)
 
 
 def pintar_casilla_vacia(casilla, escala, sprites, screen):
@@ -341,7 +346,7 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
 
 def dibujar_sprite(sprite, x, y, orientacion, escala, screen, escalar=True):
     rotacion = -90 * orientacion
-    
+
     if escalar:
         sprite = pygame.transform.scale(sprite, (escala, escala))
     sprite = pygame.transform.rotate(sprite, rotacion)

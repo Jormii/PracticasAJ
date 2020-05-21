@@ -1,6 +1,7 @@
 from enum import Enum
 import importlib
 
+# Direcciones utilizadas para indicar conexiones entre casillas
 direcciones = {
     0: (0, -1),    # Norte
     1: (1, 0),     # Este
@@ -8,6 +9,7 @@ direcciones = {
     3: (-1, 0)     # Oeste
 }
 
+# Para obtener rotaciones cuando se dibujen los sprites
 orientaciones = {
     (0, -1): 0,
     (1, 0): 1,
@@ -20,7 +22,7 @@ class TiposCasilla(Enum):
     VACIA = 0
     TUNEL = 1
     HABITACION = 2
-    TESORO = 3
+    TESORO = 3  # Una casilla con tesoro es una habitacion
 
 
 i_template = importlib.import_module("TemplateMazmorra")
@@ -49,7 +51,9 @@ class Casilla(object):
     def anadir_conexion(self, direccion):
         self.conexiones.add(direccion)
 
+    # Obtiene las conexiones a partir las casillas adyacentes
     def calcular_conexiones(self, matriz, ancho, alto):
+        # Las casillas vacias no tienen conexiones
         if self.tipo == TiposCasilla.VACIA:
             return
 
@@ -63,9 +67,10 @@ class Casilla(object):
                 continue
 
             casilla = matriz[y][x]
-            if casilla.tipo != TiposCasilla.VACIA:
+            if not casilla.esta_vacia():
                 self.conexiones.add(direccion)
 
+    # Obtiene la orientacion de la casilla. Se usa para orientar el sprite
     def orientacion(self):
         orientacion_media = 0
         for conexion in self.conexiones:
