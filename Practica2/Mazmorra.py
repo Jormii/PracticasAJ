@@ -424,9 +424,8 @@ class Mazmorra(object):
         factor_medios = self.factor >> 1
         return coordenada * self.factor + factor_medios
 
-    def imprimir_mazmorra(self, esconder_vacias=True):
+    def imprimir_mazmorra(self):
         for fila in self.mazmorra:
             for casilla in fila:
-                print(" " if casilla ==
-                      i_casilla.vacio and esconder_vacias else casilla, " ", end="")
+                print(casilla, " ", end="")
             print("")

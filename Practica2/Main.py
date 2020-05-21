@@ -131,9 +131,9 @@ def generar_mazmorra():
     alto = 8
     n_tuneles = i_vegas.random_las_vegas(
         max(ancho, alto), max(ancho, alto) + abs(ancho - alto) + 1)
-    l_max_tunnel = max(ancho, alto)
+    l_max_tunel = max(ancho, alto)
     template = i_template.TemplateMazmorra(
-        ancho, alto, n_tuneles, l_max_tunnel, debug)
+        ancho, alto, n_tuneles, l_max_tunel, debug)
 
     objetos = i_tesoro.Tesoros(
         [(1, i_tesoro.Tesoro("Baya", "baya")),
@@ -157,8 +157,8 @@ def generar_mazmorra():
     generador.generar_mazmorra()
 
     if debug:
-        mazmorra.template.imprimir_mapa_detalle()
-        mazmorra.imprimir_mazmorra()
+        template.imprimir_mapa_detalle()
+        generador.imprimir_mazmorra()
 
     return generador
 
@@ -302,7 +302,6 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
     n_conexiones_adyacentes = len(conexiones_adyacentes)
     if n_conexiones_adyacentes == 0:
         sprite = sprites["cuatro_7"]
-        orientacion = i_vegas.random_las_vegas(0, 4)
     elif n_conexiones_adyacentes == 1:
         sprite = sprites["cuatro_12"]
         orientacion = i_casilla.orientaciones[conexiones_adyacentes[0]]
@@ -337,7 +336,6 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
         orientacion = i_casilla.orientaciones[adyacencia_no_existente]
     elif n_conexiones_adyacentes == 4:
         sprite = sprites["cuatro_3"]
-        orientacion = i_vegas.random_las_vegas(0, 4)
 
     dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
