@@ -4,7 +4,7 @@ import pathlib
 import importlib
 import pygame
 
-from os import system
+from os import system, name
 from decimal import Decimal
 
 i_template = importlib.import_module("TemplateMazmorra")
@@ -48,13 +48,13 @@ def main():
                     pintar_mazmorra(generador_de_mazmorra,
                                     sprites, screen, escala)
                 if event.key == pygame.K_e:
-                    system("clear")
+                    system("cls" if system == "nt" else "clear")
                     generador_de_mazmorra.template.random_walk()
                     generador_de_mazmorra.generar_mazmorra()
                     pintar_mazmorra(generador_de_mazmorra,
                                     sprites, screen, escala)
                 if event.key == pygame.K_w:
-                    system("clear")
+                    system("cls" if system == "nt" else "clear")
                     generador_de_mazmorra.generar_mazmorra()
                     pintar_mazmorra(generador_de_mazmorra,
                                     sprites, screen, escala)
@@ -369,6 +369,7 @@ def pintar_casilla_cuatro_conexiones(casilla, mazmorra, escala, sprites, screen)
         orientacion = i_casilla.orientaciones[adyacencia_no_existente]
     elif n_conexiones_adyacentes == 4:
         sprite = sprites["cuatro_3"]
+        orientacion = i_vegas.random_las_vegas(0, 4)
 
     dibujar_sprite(sprite, x, y, orientacion, escala, screen)
 
